@@ -1,0 +1,27 @@
+schema_version: 1
+workspace:
+  roots: [builder]
+  import_aliases: ['@modules', '@types']
+  owned_paths: [prompts/, scripts/, schemas/]
+  generated_paths: [output/]
+commands:
+  default:
+    test: bash /path/to/project/tests/test_structured_artifacts.sh
+    check: python3 /path/to/project/scripts/validate-spec.py --list-checks
+boundaries:
+  off_limits: [.git/, node_modules/]
+validation:
+  test:
+    confidence: confirmed
+    probe: bash /path/to/project/tests/test_structured_artifacts.sh
+  check:
+    confidence: confirmed
+    probe: python3 /path/to/project/scripts/validate-spec.py --list-checks
+discovered:
+  ai_files: [.github/prompts/isanna-4-plan.prompt.md]
+  builder_files: [prompts/isanna-setup.prompt.md, scripts/validate-spec.py]
+  candidate_commands:
+    test:
+      - bash /path/to/project/tests/test_structured_artifacts.sh
+    check:
+      - python3 /path/to/project/scripts/validate-spec.py --list-checks

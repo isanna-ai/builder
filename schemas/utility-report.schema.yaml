@@ -1,0 +1,24 @@
+type: object
+required: [artifact, command, mode, summary, next_command]
+properties:
+  artifact:
+    type: string
+    const: utility-report
+  command:
+    type: string
+  mode:
+    type: string
+  summary:
+    type: string
+  next_command:
+    type: string
+  details:
+    type: array
+    items:
+      type: object
+      required: [title, value]
+      properties:
+        title:
+          type: string
+        value:
+          type: string

@@ -1,0 +1,7 @@
+schema_version: 1
+home_id: sol
+repositories: repositories.yaml
+policy: policy.yaml
+projects:
+  - id: bia
+    manifest: projects/bia/product.yaml

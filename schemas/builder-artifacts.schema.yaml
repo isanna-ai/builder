@@ -1,0 +1,34 @@
+type: object
+properties:
+  artifact_types:
+    type: array
+    items:
+      type: object
+      required: [artifact_type, required_fields, optional_fields]
+      properties:
+        artifact_type: {type: string}
+        required_fields:
+          type: array
+          items: {type: string}
+        optional_fields:
+          type: array
+          items: {type: string}
+  status_states:
+    type: array
+    items:
+      type: object
+      required: [name, description, valid_transitions]
+      properties:
+        name: {type: string}
+        description: {type: string}
+        valid_transitions:
+          type: array
+          items: {type: string}
+  evidence_schema:
+    type: object
+    properties:
+      exit_code: {type: integer}
+      stdout_tail: {type: string}
+      files_written:
+        type: array
+        items: {type: string}

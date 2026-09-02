@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "slot_id": "slot-1",
+  "provider": "claude-code-cli",
+  "state": "reaping",
+  "previous_state": "active",
+  "daemon_instance_id": "daemon-1",
+  "owner_pid": 1234,
+  "owner_pid_start_ticks": 987654,
+  "repo_id": "hivemind-cloud",
+  "queue_root": "/canonical/repo/.builder/dispatch-queue",
+  "work_id": "work-1",
+  "attempt_id": "attempt-1",
+  "lane": "claude",
+  "project_attribution": "bia",
+  "release_name": "bia-audit-remediation",
+  "reserved_at": "2026-07-13T00:00:00Z",
+  "updated_at": "2026-07-13T00:00:10Z",
+  "pgid": 1235,
+  "pgid_leader_start_ticks": 999999,
+  "executable": "/usr/bin/claude",
+  "command_digest": "sha256:abc"
+}

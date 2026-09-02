@@ -1,0 +1,10 @@
+artifact: utility-report
+command: /sp-validate
+mode: audit
+summary: Canonical artifacts validated cleanly.
+next_command: /isanna-archive structured-artifact-modernization
+details:
+  - title: Spec directory
+    value: .builder/specs/structured-artifact-modernization
+  - title: Result
+    value: PASS 0 errors across 12 item(s)

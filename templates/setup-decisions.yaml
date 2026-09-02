@@ -1,0 +1,28 @@
+schema_version: 1
+workspace:
+  mode: single-repo
+  roots: [<repo-name>]
+  default_repo: <repo-name>
+  import_aliases: []
+  owned_paths: []
+  generated_paths: []
+commands:
+  default:
+    test: <default test command>
+    check: <default check command>
+  repos: {}
+boundaries:
+  off_limits: []
+validation:
+  test:
+    confidence: unverified
+    probe: <probe command or note>
+  check:
+    confidence: unverified
+    probe: <probe command or note>
+discovered:
+  ai_files: []
+  builder_files: []
+  candidate_commands:
+    test: []
+    check: []

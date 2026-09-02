@@ -1,0 +1,9 @@
+scenario: 07-identity-mismatch-abort
+description: >
+  FakeBackend is constructed with an expected_identity (provider="anthropic",
+  account_id="user-expected") and an actual_identity that differs
+  (account_id="user-different"). identity_check() must raise BackendError.
+scripted_turns: []
+expected_outcome: >
+  BackendError is raised by FakeBackend.identity_check() when the actual
+  identity does not match the expected identity. No session is started.

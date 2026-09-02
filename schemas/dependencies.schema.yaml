@@ -1,0 +1,24 @@
+type: object
+required: [artifact, spec, dependencies]
+properties:
+  artifact:
+    type: string
+    const: dependencies
+  spec:
+    type: string
+    minLength: 1
+  dependencies:
+    type: array
+    items:
+      type: object
+      required: [spec, kind, reason]
+      properties:
+        spec:
+          type: string
+          minLength: 1
+        kind:
+          type: string
+          enum: [required, contextual, optional]
+        reason:
+          type: string
+          minLength: 1

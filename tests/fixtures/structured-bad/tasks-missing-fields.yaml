@@ -1,0 +1,16 @@
+artifact: tasks
+title: Broken Structured Artifact Modernization
+spec: structured-artifact-modernization
+tasks:
+  - id: T1
+    title: Lock the artifact contract
+    tdd:
+      mode: exempt
+      reason: config-only
+    steps:
+      - text: Add the canonical artifact matrix to the contract.
+    verify:
+      - command: grep -n "tasks.yaml" /path/to/project/standards/builder-contract.md
+    done_when: Contract and workflow document the canonical artifacts.
+    depends_on: []
+    parallel_with: []

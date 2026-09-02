@@ -1,0 +1,16 @@
+artifact: traceability
+spec: structured-artifact-modernization
+requirement_links:
+  - requirement_id: R1
+    design_ids: [Dual-write planning flow]
+design_links:
+  - design_id: Dual-write planning flow
+    task_ids: [T1, T2]
+task_links:
+  - task_id: T1
+    files:
+      - path: standards/builder-contract.md
+        relevance: primary
+      - path: standards/builder-workflow.md
+        relevance: supporting
+    evidence_ids: [E1-verify]

@@ -1,0 +1,6 @@
+phases:
+  - phase: 1-specify
+    completed: 2026-01-01T01:00:00Z
+    used_model: "test-model-1"
+    outcome: approved
+    notes: "Minimal fixture — status in spec.yaml is intentionally invalid"

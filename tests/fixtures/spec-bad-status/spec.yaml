@@ -1,0 +1,8 @@
+name: spec-bad-status-fixture
+created: 2026-01-01T00:00:00Z
+status: in-progress
+current_phase: 3-review
+next_action: "Run /isanna-3-review"
+task_count: 0
+tasks_done: 0
+tasks_total: 0

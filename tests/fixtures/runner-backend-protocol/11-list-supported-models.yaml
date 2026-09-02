@@ -1,0 +1,8 @@
+scenario: 11-list-supported-models
+description: >
+  FakeBackend constructed with a capability_class_map returns models in
+  deterministic insertion order for list_supported_models("standard").
+scripted_turns: []
+expected_outcome: >
+  list_supported_models("standard") returns exactly 2 ModelInfo items in the
+  order they were inserted: fake-std-1 (priority=1) then fake-std-2 (priority=2).

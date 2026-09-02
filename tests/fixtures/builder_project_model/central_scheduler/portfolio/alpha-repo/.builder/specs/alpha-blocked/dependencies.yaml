@@ -1,0 +1,3 @@
+dependencies:
+  - spec: alpha-dep
+    kind: required

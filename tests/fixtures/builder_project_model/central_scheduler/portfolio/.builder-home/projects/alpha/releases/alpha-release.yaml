@@ -1,0 +1,6 @@
+schema_version: 1
+name: alpha-release
+description: Alpha active release
+status: active
+intents:
+  - alpha-release-work

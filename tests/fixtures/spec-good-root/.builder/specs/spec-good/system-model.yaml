@@ -1,0 +1,51 @@
+version: 1
+
+what:
+  entities:
+    - id: ENT1
+      name: Message
+  capabilities:
+    - id: CAP1
+      name: send_message
+
+who:
+  actors:
+    - id: ACT1
+      name: User
+      capabilities: [CAP1]
+
+when:
+  events:
+    - id: EVT1
+      name: message_sent
+      trigger: "A user submits a message"
+
+where:
+  boundaries:
+    - id: BND1
+      name: public_api
+      purpose: "User-facing API boundary"
+
+why:
+  rules:
+    - id: RUL1
+      statement: "Only authenticated users may send messages"
+      applies_to: [ACT1, CAP1, BND1]
+
+how:
+  behaviors:
+    - capability: CAP1
+      success: "Persist the message and acknowledge the request"
+      failures: [unauthorized, invalid_payload]
+
+upstream:
+  sources:
+    - id: SRC1
+      name: AuthContext
+      contract: "Authenticated user identity"
+
+downstream:
+  sinks:
+    - id: SNK1
+      name: NotificationBus
+      contract: "message_sent event"

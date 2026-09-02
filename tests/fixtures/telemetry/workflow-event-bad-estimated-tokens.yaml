@@ -1,0 +1,27 @@
+artifact: workflow-event
+event_id: EVT-20260426-003
+recorded_at: 2026-04-26T12:10:00Z
+command: /isanna-4-plan
+mode: lifecycle
+phase: 4-plan
+spec: workflow-telemetry-intelligence
+used_model: GPT-5.4
+used_model_class: structured_planner
+thinking_effort: high
+capture_source: runtime_measured
+input_tokens: approx 900
+output_tokens: 120
+total_tokens: 1020
+latency_ms: 1500
+tokens_per_second: 68.0
+reason_category: phase_progress
+intent_summary: Produce a task plan.
+execution_path: normal_phase
+artifacts_read: [design.yaml, requirements.yaml]
+artifacts_written: [tasks.yaml, tasks.md]
+validation_refs: [tests/test_structured_artifacts.sh]
+outcome_category: completed
+next_command: /isanna-5-implement 1-2 workflow-telemetry-intelligence
+redaction:
+  sanitized: true
+  fields: []

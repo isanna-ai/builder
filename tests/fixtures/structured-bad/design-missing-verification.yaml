@@ -1,0 +1,13 @@
+artifact: design
+title: Structured Artifact Modernization
+spec: structured-artifact-modernization
+responsibility_allocation:
+  - surface: prompts/isanna-4-plan.prompt.md
+    keep: Phase sequence and approval gate
+    change: Write tasks.yaml and render tasks.md
+    why: Planning data should be canonical and machine-readable.
+core_changes:
+  - title: Dual-write planning flow
+    summary: Planning writes tasks.yaml first and renders tasks.md from the same source.
+telemetry_strategy:
+  - Use canonical artifacts as the operational signal instead of prose summaries.

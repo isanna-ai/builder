@@ -1,0 +1,78 @@
+type: object
+required:
+  - schema
+  - spec
+  - implementation_baseline
+  - verified_head
+  - verified_tree
+  - changed_paths
+  - changed_paths_digest
+  - declared_delta_digest
+  - verify_gate_id
+  - verify_gate_bundle
+  - verify_gate_sha256
+  - worktree_root
+  - control_root
+  - worktree_isolated
+  - transaction_id
+additionalProperties: false
+properties:
+  schema:
+    type: string
+    const: sync-scope/v1
+  spec:
+    type: string
+    minLength: 1
+  admission:
+    type: string
+    enum: [readmission]
+  implementation_baseline:
+    type: string
+    minLength: 1
+  verified_head:
+    type: string
+    minLength: 1
+  verified_tree:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  changed_paths:
+    type: array
+    uniqueItems: true
+    items:
+      type: string
+      minLength: 1
+  changed_paths_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  declared_delta_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  verify_gate_id:
+    type: string
+    minLength: 1
+  verify_gate_bundle:
+    type: string
+    minLength: 1
+  verify_gate_sha256:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  worktree_root:
+    type: string
+    minLength: 1
+  control_root:
+    type: string
+    minLength: 1
+  worktree_isolated:
+    type: boolean
+  transaction_id:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  provenance:
+    type: string
+    enum: [bootstrap-exception]
+  owner_authorization:
+    type: string
+    minLength: 1
+  derived_baseline:
+    type: string
+    minLength: 1

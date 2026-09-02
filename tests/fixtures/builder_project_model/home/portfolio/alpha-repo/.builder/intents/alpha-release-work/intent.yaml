@@ -1,0 +1,18 @@
+artifact: intent-object
+intent: alpha-release-work
+title: Alpha release work
+status: accepted
+problem: Alpha release work needs one ownership object.
+why: Live releases declare intents.
+success_criteria:
+  - id: sc-1
+    statement: Members preserve release order.
+non_goals:
+  - Do not change member identity.
+ssot_delta:
+  capabilities: []
+  behaviors: []
+  journeys: []
+specs:
+  - alpha-core
+  - shared/shared-spec

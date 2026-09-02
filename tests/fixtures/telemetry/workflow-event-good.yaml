@@ -1,0 +1,29 @@
+artifact: workflow-event
+event_id: EVT-20260426-001
+recorded_at: 2026-04-26T12:00:00Z
+command: /isanna-5-implement
+mode: lifecycle
+phase: 5-implement
+spec: workflow-telemetry-intelligence
+used_model: GPT-5.4
+used_model_class: deep_reasoner
+thinking_effort: xhigh
+capture_source: runtime_measured
+input_tokens: 1200
+output_tokens: 340
+total_tokens: 1540
+latency_ms: 2200
+tokens_per_second: 154.0
+reason_category: phase_progress
+intent_summary: Implement the workflow event schema and recorder.
+execution_path: normal_phase
+artifacts_read: [tasks.yaml, design.yaml, requirements.yaml]
+artifacts_written: [schemas/workflow-event.schema.yaml, scripts/_telemetry/record.py]
+validation_refs: [tests/test_workflow_telemetry.sh]
+outcome_category: completed
+outcome_detail: Recorder persisted a canonical workflow event.
+next_command: /isanna-5-implement 3-4 workflow-telemetry-intelligence
+parent_event_id: ""
+redaction:
+  sanitized: true
+  fields: []

@@ -1,0 +1,8 @@
+scenario: 03-write-scope-denied
+description: >
+  A write_file call targeting /etc/passwd (outside the allowed builder paths)
+  must be blocked by the write_scope policy layer before reaching the filesystem.
+scripted_turns: []
+expected_outcome: >
+  PolicyDenied with rule_id == "write_scope" is returned by ToolHost.dispatch
+  without touching the real filesystem.

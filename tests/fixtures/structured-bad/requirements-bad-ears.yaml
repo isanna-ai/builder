@@ -1,0 +1,8 @@
+artifact: requirements
+title: Structured Artifact Modernization
+spec: structured-artifact-modernization
+requirements:
+  - id: R1
+    title: Canonical planning artifact
+    acceptance:
+      - WHEN planning data is saved, the system SHALL write tasks.yaml.

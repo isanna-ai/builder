@@ -1,0 +1,7 @@
+# Human-owned live release membership. Intents own ordered spec membership.
+release: example-release
+product: example-product
+title: Example Release
+status: draft
+intents:
+  - example-intent

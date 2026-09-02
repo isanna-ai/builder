@@ -1,0 +1,15 @@
+schema_version: 1
+product: bia
+title: Example Product
+description: Hosted example work
+default_repo: hivemind-cloud
+repos:
+  - alias: cloud
+    repo_id: hivemind-cloud
+  - alias: flow
+    repo_id: sharedlib
+backlog:
+  - spec: cloud/audit-log-retention
+releases:
+  - name: bia-audit-remediation
+    manifest: releases/bia-audit-remediation.yaml

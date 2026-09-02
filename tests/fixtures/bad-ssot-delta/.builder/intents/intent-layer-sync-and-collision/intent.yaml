@@ -1,0 +1,21 @@
+artifact: intent-object
+intent: intent-layer-sync-and-collision
+title: Sync and collision follow-through
+status: accepted
+problem: p
+why: w
+success_criteria:
+  - id: sc-1
+    statement: s
+non_goals:
+  - n
+ssot_delta:
+  capabilities:
+    - target: sync-phase
+      change: create
+  behaviors:
+    - target: intent-sync
+      change: enrich
+  journeys: []
+specs:
+  - bad-ssot-delta

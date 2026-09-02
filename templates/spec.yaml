@@ -1,0 +1,7 @@
+name: <feature-name>
+created: <YYYY-MM-DDTHH:MM:SSZ>
+status: specifying
+current_phase: 1-specify
+next_action: "Run /isanna-1-specify"
+# Optional per-spec independent reviewer count: 0 (skip) / 1 (one reviewer) / 2 (two independent reviewers, complementary lenses).
+# reviews: 0

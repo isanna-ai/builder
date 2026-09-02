@@ -1,0 +1,12 @@
+schema_version: 1
+product: beta
+title: Beta
+description: Beta project
+default_repo: beta-repo
+repos:
+  - alias: beta
+    repo_id: beta-repo
+backlog: []
+releases:
+  - name: beta-release
+    manifest: releases/beta-release.yaml

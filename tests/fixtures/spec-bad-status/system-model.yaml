@@ -1,0 +1,45 @@
+version: 1
+
+what:
+  entities:
+    - id: ENT1
+      name: Ticket
+  capabilities:
+    - id: CAP1
+      name: reopen_ticket
+
+who:
+  actors:
+    - id: ACT1
+      name: Agent
+      capabilities: [CAP1]
+
+when:
+  events:
+    - id: EVT1
+      name: ticket_reopened
+      trigger: "An agent reopens a closed ticket"
+
+where:
+  boundaries:
+    - id: BND1
+      name: admin_console
+      purpose: "Support-only surface"
+
+why:
+  rules:
+    - id: RUL1
+      statement: "Only support agents may reopen tickets"
+      applies_to: [ACT1, CAP1, BND1]
+
+how:
+  behaviors:
+    - capability: CAP1
+      success: "Ticket status changes back to open"
+      failures: [unauthorized]
+
+upstream:
+  sources: []
+
+downstream:
+  sinks: []

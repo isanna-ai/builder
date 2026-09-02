@@ -1,0 +1,40 @@
+type: object
+required:
+  - schema
+  - spec
+  - implementation_baseline
+  - baseline_paths
+  - baseline_paths_digest
+  - worktree_root
+  - control_root
+  - worktree_isolated
+additionalProperties: false
+properties:
+  schema:
+    type: string
+    const: implementation-baseline/v1
+  spec:
+    type: string
+    minLength: 1
+  implementation_baseline:
+    type: string
+    minLength: 1
+  baseline_paths:
+    type: array
+    uniqueItems: true
+    items:
+      type: string
+  baseline_paths_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  worktree_root:
+    type: string
+    minLength: 1
+  control_root:
+    type: string
+    minLength: 1
+  worktree_isolated:
+    type: boolean
+  transaction_id:
+    type: string
+    pattern: "^[0-9a-f]{64}$"

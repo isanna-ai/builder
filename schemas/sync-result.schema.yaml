@@ -1,0 +1,120 @@
+type: object
+required:
+  - spec
+  - worktree_root
+  - verify_gate_id
+  - verify_gate_sha256
+  - sync_gate_id
+  - sync_gate_bundle
+  - sync_gate_sha256
+  - verified_tree
+  - changed_paths_digest
+  - declared_delta_digest
+  - result
+  - resolution_paths
+  - preimage_manifest_digest
+  - observed_tuples
+  - undeclared_tuples
+  - hook_exit_code
+  - publish_state
+  - transaction_id
+additionalProperties: false
+properties:
+  spec:
+    type: string
+    minLength: 1
+  worktree_root:
+    type: string
+    minLength: 1
+  verify_gate_id:
+    type: string
+    minLength: 1
+  verified_tree:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  changed_paths_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  declared_delta_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  preimage_manifest_digest:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  observed_tuples:
+    type: array
+    items:
+      type: object
+      required:
+        - category
+        - target
+        - change
+      additionalProperties: false
+      properties:
+        category:
+          type: string
+          enum: [capabilities, behaviors, journeys]
+        target:
+          type: string
+          minLength: 1
+        change:
+          type: string
+          enum: [create, enrich, rewire]
+  undeclared_tuples:
+    type: array
+    items:
+      type: object
+      required:
+        - category
+        - target
+        - change
+      additionalProperties: false
+      properties:
+        category:
+          type: string
+          enum: [capabilities, behaviors, journeys]
+        target:
+          type: string
+          minLength: 1
+        change:
+          type: string
+          enum: [create, enrich, rewire]
+  hook_exit_code:
+    type: integer
+  publish_state:
+    type: string
+    enum: [published, staged-only]
+  result:
+    type: string
+    enum: [synced, divergence, bootstrap_required, hook_failed]
+  resolution_paths:
+    type: array
+    minItems: 3
+    maxItems: 3
+    uniqueItems: true
+    items:
+      type: string
+  verify_gate_sha256:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  sync_gate_id:
+    type: string
+    minLength: 1
+  sync_gate_bundle:
+    type: string
+    minLength: 1
+  sync_gate_sha256:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  transaction_id:
+    type: string
+    pattern: "^[0-9a-f]{64}$"
+  provenance:
+    type: string
+    enum: [bootstrap-exception]
+  owner_authorization:
+    type: string
+    minLength: 1
+  derived_baseline:
+    type: string
+    minLength: 1

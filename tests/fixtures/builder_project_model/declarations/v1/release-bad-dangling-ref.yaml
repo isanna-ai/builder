@@ -1,0 +1,7 @@
+schema_version: 1
+name: bia-audit-remediation
+description: Remediate the confirmed audit findings
+status: shipped
+specs:
+  - spec: audit-inventory
+  - spec: unknown/fix-retention

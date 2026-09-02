@@ -1,0 +1,116 @@
+type: object
+required: [artifact, intent, title, status, problem, why, success_criteria, non_goals, ssot_delta, specs]
+additionalProperties: false
+properties:
+  artifact:
+    type: string
+    const: intent-object
+  intent:
+    type: string
+    minLength: 1
+  title:
+    type: string
+    minLength: 1
+  status:
+    type: string
+    enum: [proposed, accepted, rejected, superseded]
+  problem:
+    type: string
+    minLength: 1
+  why:
+    type: string
+    minLength: 1
+  success_criteria:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, statement]
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          minLength: 1
+        statement:
+          type: string
+          minLength: 1
+  non_goals:
+    type: array
+    minItems: 1
+    items:
+      type: string
+      minLength: 1
+  ssot_delta:
+    type: object
+    required: [capabilities, behaviors, journeys]
+    additionalProperties: false
+    properties:
+      capabilities:
+        type: array
+        items:
+          type: object
+          required: [target, change]
+          additionalProperties: false
+          properties:
+            target:
+              type: string
+              minLength: 1
+            change:
+              type: string
+              enum: [create, enrich, rewire]
+      behaviors:
+        type: array
+        items:
+          type: object
+          required: [target, change]
+          additionalProperties: false
+          properties:
+            target:
+              type: string
+              minLength: 1
+            change:
+              type: string
+              enum: [create, enrich, rewire]
+      journeys:
+        type: array
+        items:
+          type: object
+          required: [target, change]
+          additionalProperties: false
+          properties:
+            target:
+              type: string
+              minLength: 1
+            change:
+              type: string
+              enum: [create, enrich, rewire]
+  specs:
+    type: array
+    items:
+      type: string
+      minLength: 1
+  reason:
+    type: string
+    minLength: 1
+  superseded_by:
+    type: string
+    minLength: 1
+allOf:
+  - if:
+      properties:
+        status:
+          enum: [rejected, superseded]
+      required: [status]
+    then:
+      required: [reason]
+    else:
+      not:
+        required: [reason]
+  - if:
+      properties:
+        status:
+          const: superseded
+      required: [status]
+    else:
+      not:
+        required: [superseded_by]

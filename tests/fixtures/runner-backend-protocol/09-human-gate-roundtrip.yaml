@@ -1,0 +1,9 @@
+scenario: 09-human-gate-roundtrip
+description: >
+  A human_gate tool_call dispatched through FakeToolHost returns
+  GateUndeliverable because the fake has no real channel. The reason field
+  must contain "fake" to distinguish it from a real channel failure.
+scripted_turns: []
+expected_outcome: >
+  GateUndeliverable with "fake" in the reason string is returned by
+  FakeToolHost.dispatch for a human_gate ToolCall. No blocking wait occurs.

@@ -1,0 +1,100 @@
+type: object
+required: [task_id, target_model_profile, depends_on, files, summaries, verify_commands, red_tail_token_budget, tdd_mode]
+properties:
+  task_id: {type: string}
+  target_model_profile:
+    type: string
+    enum: [tiny_local, small_commercial, flagship_commercial]
+  depends_on:
+    type: array
+    items: {type: string}
+  files:
+    type: array
+    items:
+      type: object
+      required: [path, mode]
+      properties:
+        path: {type: string}
+        mode:
+          type: string
+          enum: [full, anchored]
+        anchors:
+          type: array
+          items:
+            type: object
+            required: [id, kind, locator]
+            properties:
+              id: {type: string}
+              kind:
+                type: string
+                enum: [literal_string, regex_v1, symbol_v1]
+              locator: {type: string}
+              estimated_tokens: {type: integer}
+              load_priority:
+                type: string
+                enum: [must, should, optional]
+        load_priority:
+          type: string
+          enum: [must, should, optional]
+  summaries:
+    type: array
+    items: {type: string}
+  verify_commands:
+    type: array
+    minItems: 1
+    items: {type: string}
+  capability_class: {type: string}
+  red_tail_token_budget: {type: integer}
+  tdd_mode:
+    type: string
+    enum: [required, exempt_refactor_only, exempt_delete_only, exempt_type_only, exempt_config_only, exempt_infrastructure_only]
+  # --- P0.1 self-contained runner-packet contract (all OPTIONAL) ---------------
+  # The packet is the implementer's EXCLUSIVE runtime interface. These fields carry
+  # the NORMATIVE description of WHAT to build, copied VERBATIM from the approved
+  # task by the packet emitter (scripts/_dispatch_runtime/packet_contract.py). They
+  # are OPTIONAL so legacy packets keep validating; the hard requirement that
+  # objective/steps/done_when/allowed_change_files be present is gated behind the
+  # BUILDER_PACKET_CONTRACT flag (off by default | enforce), which mirrors
+  # BUILDER_HOST_VERIFY. None of these appear in the top-level `required` list.
+  objective:
+    # One-line statement of what this task must achieve (the task's title, verbatim).
+    type: string
+  steps:
+    # Ordered implementation steps (the task's steps[].text, verbatim).
+    type: array
+    items: {type: string}
+  done_when:
+    # Binary completion predicates: each a predicate string, or a structured
+    # {acceptance_id, predicate}. The runner is "done" only when ALL hold.
+    type: array
+    items:
+      oneOf:
+        - type: string
+        - type: object
+          required: [acceptance_id, predicate]
+          properties:
+            acceptance_id: {type: string}
+            predicate: {type: string}
+  allowed_change_files:
+    # The change set the task is permitted to touch (the task's `files`, verbatim).
+    type: array
+    items: {type: string}
+  required_diff_classes:
+    # The kinds of change a faithful implementation must produce, inferred from
+    # tdd_mode (a behavior task gets [production, test]).
+    type: array
+    items:
+      type: string
+      enum: [production, test, config, documentation, deletion]
+  acceptance_ids:
+    # Resolved acceptance-criterion ids this task proves (from the task links).
+    type: array
+    items: {type: string}
+  design_ids:
+    # Resolved design ids this task realizes (from traceability links).
+    type: array
+    items: {type: string}
+  requirement_ids:
+    # Resolved requirement ids this task satisfies (from traceability links).
+    type: array
+    items: {type: string}

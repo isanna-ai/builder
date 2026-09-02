@@ -1,0 +1,14 @@
+scenario: 02-protocol-error-unknown-tool
+description: >
+  The model returns a tool_call referencing a tool name that does not exist in
+  the catalog. validate_call should raise ProtocolError with the unknown tool
+  name in the error fields.
+scripted_turns:
+  - content: ""
+    tool_calls:
+      - call_id: "c1"
+        name: "nonexistent_tool"
+        arguments: {}
+expected_outcome: >
+  ProtocolError is raised containing "nonexistent_tool" in the name field or
+  "unknown" in the message field when the harness attempts to process the turn.

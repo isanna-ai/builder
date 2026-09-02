@@ -1,0 +1,22 @@
+artifact: tasks
+title: <Feature Title>
+spec: <feature-name>
+tasks:
+  - id: T1
+    title: <Task title>
+    repo: <repo>/
+    files: [<path/to/file>]
+    tdd:
+      mode: required
+    steps:
+      - text: Write the failing test first.
+      - text: Implement the smallest passing change.
+    verify:
+      # `proves` (optional) lists the acceptance-criterion ids this command discharges;
+      # every `priority: must` criterion must be proven by at least one verify item.
+      - command: <focused test command>
+        proves: [AC-R1-1]
+      - command: <project verification command>
+    done_when: <binary done condition>
+    depends_on: []
+    parallel_with: []

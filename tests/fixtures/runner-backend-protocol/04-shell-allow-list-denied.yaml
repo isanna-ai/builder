@@ -1,0 +1,9 @@
+scenario: 04-shell-allow-list-denied
+description: >
+  A run_shell call with argv=["rm", "-rf", "/tmp/x"] must be blocked by the
+  shell_policy layer because "rm" is not in the DEFAULT_SHELL_ALLOW_LIST and
+  phase_5_verify_allow_list is empty.
+scripted_turns: []
+expected_outcome: >
+  PolicyDenied with rule_id == "shell_policy" is returned by ToolHost.dispatch.
+  The rm command is never executed.

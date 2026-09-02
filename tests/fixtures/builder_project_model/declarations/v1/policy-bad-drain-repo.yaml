@@ -1,0 +1,24 @@
+schema_version: 1
+governor:
+  enabled: true
+  drain_repos:
+    - hivemind-cloud
+    - BAD REPO
+providers:
+  claude-code-cli:
+    max_sessions: 2
+    quota_cooldown:
+      initial_seconds: 300
+      max_seconds: 3600
+  codex-cli:
+    max_sessions: 3
+    quota_cooldown:
+      initial_seconds: 300
+      max_seconds: 3600
+allocation:
+  policy: equal-weight-fair-share
+  project_weight: 1
+scheduler:
+  poll_seconds: 2
+  heartbeat_seconds: 5
+  stale_daemon_seconds: 30

@@ -1,0 +1,10 @@
+{
+  "builder_ref": "{{GIT_REF_OR_UNKNOWN}}",
+  "installed_at": "{{ISO_8601_TIMESTAMP}}",
+  "assets": {
+    "path/relative/to/install/root": {
+      "source": "canonical/path/relative/to/builder/root",
+      "sha256": "{{SHA256_HEX}}"
+    }
+  }
+}

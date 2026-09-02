@@ -1,0 +1,12 @@
+phases:
+  - phase: 5-implement
+    batch: run-1
+    task_range: "1"
+    used_model: "test-model-1"
+    outcome: batch-complete
+    tasks:
+      - task_id: T1
+        status: done
+        tdd:
+          mode: required
+        evidence_file: evidence/task-1.yaml

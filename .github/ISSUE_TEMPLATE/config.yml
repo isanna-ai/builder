@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/isanna-ai/builder/security/advisories/new
+    about: Report privately. Please do not open a public issue for a security problem.
+  - name: Trademark / naming question
+    url: https://github.com/isanna-ai/builder/blob/main/TRADEMARKS.md
+    about: The code is Apache-2.0; the name is not. TRADEMARKS.md says what you can do without asking.

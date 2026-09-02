@@ -1,0 +1,7 @@
+task_id: T1
+entries:
+  - id: E1-verify
+    step: verify
+    command: bash /path/to/project/tests/test_validator.sh
+    exit_code: 0
+    output_summary: validator suite passed

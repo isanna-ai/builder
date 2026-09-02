@@ -1,0 +1,10 @@
+scenario: 06-trusted-tier-curl
+description: >
+  curl_wrapper.run_curl raises PolicyDenied(rule_id="trust_tier") when called
+  with a standard-tier PolicyContext. A trusted-tier context is required to
+  execute curl or wget commands.
+scripted_turns: []
+expected_outcome: >
+  PolicyDenied with rule_id == "trust_tier" is raised immediately when
+  run_curl is called with ctx.trust_tier == "standard". No subprocess is
+  spawned.

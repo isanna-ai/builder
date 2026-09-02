@@ -1,0 +1,38 @@
+artifact: design
+title: <Feature Title>
+spec: <feature-name>
+responsibility_allocation:
+  - id: D1
+    surface: <file-or-surface>
+    keep: <existing behavior to keep>
+    change: <change to make, including the error-handling behavior for this surface>
+    why: <reason>
+core_changes:
+  - id: D2
+    title: <Design change>
+    summary: <concise summary; state the error-handling behavior for the new surface>
+    requirements: [R1]
+risks:
+  - risk: <what could go wrong with this design>
+    mitigation: <how the design contains or detects it>
+affected_contracts:
+  - name: <API / schema / migration touched>
+    kind: schema
+    change: <what changes about this contract>
+# Required only when intent `change_risk` is `destructive` or `irreversible`.
+# The rollback must be zero-on-success commands runnable in a disposable/test
+# environment — never a production-destructive command.
+migration_strategy:
+  preconditions:
+    - <state that must hold before running forward_command>
+  preservation_invariants:
+    - <data/behavior that must survive the change unchanged>
+  forward_command: <command that applies the destructive change>
+  rollback_command: <command that reverses it (or restores from the pre-change snapshot)>
+  rollback_window: <how long rollback stays possible, e.g. "until next migration" / "24h">
+  rollback_verification:
+    - <zero-on-success command proving the rollback restored the invariants>
+telemetry_strategy:
+  - <telemetry or observability note>
+verification_strategy:
+  - command: <verification command>

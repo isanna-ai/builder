@@ -1,0 +1,12 @@
+artifact: traceability
+spec: structured-artifact-modernization
+requirement_links:
+  - requirement_id: R9
+    design_ids: [Missing design]
+design_links:
+  - design_id: Missing design
+    task_ids: [T99]
+task_links:
+  - task_id: T99
+    files: [missing/file.ts]
+    evidence_ids: [E99-verify]

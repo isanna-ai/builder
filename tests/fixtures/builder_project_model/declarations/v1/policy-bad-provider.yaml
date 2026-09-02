@@ -1,0 +1,14 @@
+schema_version: 1
+providers:
+  claude-code-cli:
+    max_sessions: 2
+    quota_cooldown:
+      initial_seconds: 300
+      max_seconds: 3600
+allocation:
+  policy: equal-weight-fair-share
+  project_weight: 2
+scheduler:
+  poll_seconds: 2
+  heartbeat_seconds: 5
+  stale_daemon_seconds: 30

@@ -1,0 +1,20 @@
+type: object
+required: [product, repos]
+properties:
+  product:
+    type: string
+    pattern: "^[a-z0-9][a-z0-9-]*$"
+  title:
+    type: string
+  repos:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [alias]
+      properties:
+        alias:
+          type: string
+          pattern: "^[a-z0-9][a-z0-9-]*$"
+      additionalProperties: true
+additionalProperties: true

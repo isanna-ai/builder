@@ -1,0 +1,21 @@
+phases:
+  - phase: 1-specify
+    completed: 2026-01-01T01:00:00Z
+    used_model: "test-model-1"
+    outcome: approved
+    files_written: [system-model.yaml, requirements.yaml, requirements.md]
+    notes: "Fixture phase 1 — all fields valid"
+  - phase: 2-design
+    completed: 2026-01-01T02:00:00Z
+    used_model: "test-model-1"
+    outcome: approved
+    files_written: [design.yaml, design.md]
+    notes: "Fixture phase 2 — all fields valid"
+  - phase: 6-verify
+    completed: 2026-01-01T03:00:00Z
+    used_model: "test-model-2"
+    outcome: pass
+    verification:
+      - task_id: T1
+        evidence_file: evidence/task-1.yaml
+    notes: "Fixture phase 6 — verification groups use explicit task_id"

@@ -1,0 +1,8 @@
+name: spec-bad-evidence-fixture
+created: 2026-01-01T00:00:00Z
+status: implementing
+current_phase: 5-implement
+next_action: "Fix red evidence"
+task_count: 1
+tasks_done: 1
+tasks_total: 1

@@ -1,0 +1,91 @@
+type: object
+required: [artifact, title, spec, outcome, goal, references, constraints, failure_conditions, success_signals, non_goals]
+properties:
+  artifact:
+    type: string
+    const: intent
+  title:
+    type: string
+    minLength: 1
+  spec:
+    type: string
+    minLength: 1
+  outcome:
+    type: string
+    minLength: 1
+  # OPTIONAL. Absent == `normal`. When `destructive` or `irreversible`, the
+  # design MUST carry a `migration_strategy` (enforced doc-level in the
+  # /isanna-2-design prompt + implement guardrails, NOT by the schema — keeps
+  # existing specs valid).
+  change_risk:
+    type: string
+    enum: [normal, destructive, irreversible]
+  goal:
+    type: object
+    required: [summary]
+    properties:
+      summary:
+        type: string
+        minLength: 1
+      implementation_spec:
+        type: boolean
+      notes:
+        type: array
+        items:
+          type: string
+          minLength: 1
+  references:
+    type: object
+    required: [system_model]
+    properties:
+      system_model:
+        type: array
+        minItems: 1
+        items:
+          type: string
+          minLength: 1
+  constraints:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, statement]
+      properties:
+        id:
+          type: string
+          pattern: ^C[0-9]+$
+        statement:
+          type: string
+          minLength: 1
+  failure_conditions:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, statement]
+      properties:
+        id:
+          type: string
+          pattern: ^F[0-9]+$
+        statement:
+          type: string
+          minLength: 1
+  success_signals:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, statement]
+      properties:
+        id:
+          type: string
+          pattern: ^S[0-9]+$
+        statement:
+          type: string
+          minLength: 1
+  non_goals:
+    type: array
+    minItems: 1
+    items:
+      type: string
+      minLength: 1

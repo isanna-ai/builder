@@ -1,0 +1,788 @@
+# The behavioral SSOT of isanna-builder — what the system does, anchored to the tests that enforce it.
+#
+# This is the human-readable index of every load-bearing behavior. It is NOT prose that can drift:
+# every entry names a `guarding_tests` set, and the drift-check (scripts/_validators/behaviors.py,
+# run in `make gate`) FAILS the build if any named test does not exist or is not in the gate. A
+# behavior with no live test is a claim the host cannot verify — the exact lie this product refuses.
+#
+# Aligned with the thesis: the host verifies, not the agent — so here too, the TEST enforces, not the
+# prose. If you rebuilt the code from scratch, you would make these tests pass; the tests are the
+# executable spec, this file is the map, and `breaks_when` records the mutation each test must catch
+# (proven by mutation audits: repository-wide 2026-07-15; Builder Home and authoring/cutover
+# residual bindings re-audited 2026-07-24).
+#
+# PROVENANCE SCOPE (2026-07-27): the mutation-audit claim above covers only the entries present as of
+# 2026-07-24. Entries added later are verified by AST-checked live guarding_tests (scripts/_validators/behaviors.py) and by reading what
+# each cited test actually asserts — they are NOT mutation-audited.
+#
+# Maintenance: `isanna sync` refreshes the spec-derived capabilities (isanna model) and validates this
+# file's drift on every spec completion. New non-spec behaviors are curated here by hand.
+
+schema: system-behaviors/v1
+
+behaviors:
+  # ---------------------------------------------------------------- the thesis
+  - id: numerator-host-verified-only
+    area: thesis
+    behavior: "% done counts ONLY specs the host stamped host-verified."
+    invariant: "An agent that sets status:verified, writes more tasks, or pads phase-log moves the numerator by exactly zero."
+    guarding_tests:
+      - tests/unit/test_record_releases.py::test_host_verified_member_counts_in_the_numerator_via_the_real_scan
+      - tests/unit/test_planning.py::test_percent_done_counts_only_host_verified
+      - tests/unit/test_planning.py::test_agent_setting_status_verified_moves_the_number_by_zero
+    breaks_when: "planning._spec_verification matches the wrong scan-row key (spec_id vs spec), or completeness counts a non-host-verified status."
+
+  - id: planned-never-inflates
+    area: thesis
+    behavior: "A `planned` member is resolved but never host-verified; it only keeps a member OUT of the numerator."
+    invariant: "planned counts toward the denominator, never the numerator."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_planned_member_is_resolved_but_never_verified
+    breaks_when: "the planned branch of completeness increments `verified`."
+
+  - id: dangling-denominator-only
+    area: thesis
+    behavior: "A dangling member (referenced spec that does not exist) counts the denominator, never the numerator."
+    invariant: "A plan that references a non-existent spec is broken, not done."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_dangling_member_counts_against_denominator_never_numerator
+    breaks_when: "the dangling branch of completeness increments `verified`."
+
+  - id: verify-blindness-is-not-success
+    area: thesis
+    behavior: "isanna verify with no declared verify commands returns UNVERIFIABLE, never a green."
+    invariant: "A gate that checked nothing has proven nothing; it must not exit 0."
+    guarding_tests:
+      - tests/unit/test_isanna.py::test_verify_refuses_to_report_success_when_it_checked_NOTHING
+      - tests/unit/test_isanna.py::test_verify_on_a_missing_directory_is_an_error_not_a_pass
+    breaks_when: "cmd_verify returns 0 when the collected command set is empty."
+
+  - id: demo-cannot-launder-a-broken-gate
+    area: thesis
+    behavior: "The demo declares the liar 'caught' ONLY from the real gate verdicts; if the gate lets the lie through, the demo fails loudly."
+    invariant: "main()'s caught verdict is derived from hv1/sd1, never hardcoded — a broken gate can never yield a green demo."
+    guarding_tests:
+      - tests/unit/test_isanna.py::test_demo_fails_loudly_if_the_gate_lets_the_lie_through
+      - tests/unit/test_isanna.py::test_demo_liar_is_rejected_by_BOTH_gates
+    breaks_when: "demo.main hardcodes `caught = True` instead of deriving it from the gate results."
+
+  # ---------------------------------------------------------------- The Record (two-register rule)
+  - id: record-two-register-provenance
+    area: record
+    behavior: "The Releases surface renders host verdicts and agent claims in two distinct registers, assigned by provenance never content."
+    invariant: "Exactly the host-verified members + the completeness seal wear the host-seal; a planned/self-reported member can never acquire a host seal."
+    guarding_tests:
+      - tests/unit/test_record_releases.py::test_releases_surface_counts_only_host_verified_members
+    breaks_when: "_releases gives a planned/self-reported member a host-seal, or derives the fraction from anything but completeness.verified."
+
+  - id: roadmap-record-end-to-end
+    area: record
+    behavior: "An authored roadmap driven through the isanna CLI shows a host-observed % the agent cannot forge."
+    invariant: "The Record's release % reflects real host gate records, not each spec's self-declared status."
+    guarding_tests:
+      - tests/unit/test_roadmap_record_e2e.py::test_authored_roadmap_is_visible_in_the_record_as_designed
+      - tests/unit/test_roadmap_record_e2e.py::test_authored_roadmap_counts_a_real_host_stamp_not_its_status
+    breaks_when: "the release-create -> record-build chain lets a spec's status reach the numerator, or the scan key regresses."
+
+  # ---------------------------------------------------------------- planning / roadmap authoring
+  - id: release-create-refuses-traversal
+    area: planning
+    behavior: "isanna release create refuses to write through a symlinked release/product file or a traversing spec id."
+    invariant: "The scaffolder cannot be steered to create a file outside .builder/."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_release_create_refuses_to_write_through_a_dangling_symlinked_release
+      - tests/unit/test_planning.py::test_release_create_refuses_to_write_through_a_dangling_symlinked_product
+      - tests/unit/test_planning.py::test_release_create_rejects_traversing_spec_before_writing_anything
+    breaks_when: "cmd_release_create drops a symlink guard or the spec-id safety check."
+
+  - id: safe-load-never-follows-symlink
+    area: planning
+    behavior: "The planning YAML loader never follows a symlinked planning artifact."
+    invariant: "A committed dependencies.yaml -> /tmp/outside.yaml cannot escape the spec dir."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_symlinked_yaml_inside_a_valid_spec_dir_is_not_followed
+      - tests/unit/test_planning.py::test_symlinked_specs_dir_cannot_escape_the_repo
+    breaks_when: "planning._safe_load drops the is_symlink refusal."
+
+  - id: ship-is-human-only-and-gated
+    area: planning
+    behavior: "isanna release ship refuses an incomplete or planned-bearing release; shipping is a human judgment the system never auto-transitions."
+    invariant: "The system computes shippable; it never flips a release to shipped on its own."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_ship_refuses_an_incomplete_release
+      - tests/unit/test_planning.py::test_ship_refuses_a_release_with_planned_members
+    breaks_when: "cmd_release_ship weakens the verified<total / dangling / planned guard."
+
+  - id: spec-ref-rejects-junk
+    area: planning
+    behavior: "A release spec ref rejects traversal, backslashes, extra segments, and empty parts."
+    invariant: "No member ref can be turned into a path that escapes a specs dir."
+    guarding_tests:
+      - tests/unit/test_planning.py::test_ref_rejects_traversal_and_junk
+    breaks_when: "parse_spec_ref relaxes the segment/separator checks."
+
+  # ---------------------------------------------------------------- Builder Home
+  - id: builder-home-declarations-strict-v1
+    area: builder-home
+    behavior: "Every canonical Builder Home declaration (builder.yaml, repositories.yaml, policy.yaml, projects/*/product.yaml, and projects/*/releases/*.yaml) requires schema_version: 1 and rejects unknown keys."
+    invariant: "Canonical declarations are explicit closed v1 contracts; misspelled, future, or undeclared fields never pass silently."
+    guarding_tests:
+      - tests/unit/test_builder_home_schema_contracts.py::test_v1_declaration_parsers_accept_known_good_manifests
+      - tests/unit/test_builder_home_schema_contracts.py::test_every_canonical_declaration_rejects_unknown_top_level_keys
+      - tests/unit/test_builder_home_schema_contracts.py::test_every_canonical_declaration_requires_supported_schema_version
+    breaks_when: "require_schema_version accepts a value other than 1, or any parse_*_manifest function drops its top-level reject_unknown_keys call."
+
+  - id: builder-home-queue-v1-shape-contract
+    area: builder-home
+    behavior: "The queue-record v1 parser surface freezes the existing work-item, attempt, lane, and event shapes without changing the legacy on-disk records to add a schema_version field."
+    invariant: "All four current QueueStore families parse through their v1 contract, while invalid states and malformed metadata/payload shapes are rejected."
+    guarding_tests:
+      - tests/unit/test_queue_record_schema_contracts.py::test_queue_record_schemas_accept_known_good_current_shapes
+      - tests/unit/test_queue_record_schema_contracts.py::test_queue_record_schemas_reject_bad_state_metadata_and_payload_shapes
+      - tests/unit/test_queue_record_schema_contracts.py::test_reconstruction_characterization_keeps_mis_serialized_lease_and_metadata_lenient
+    breaks_when: "queue_schema changes an allowed record key/state/event type, stops enforcing mapping payloads, or QueueStore reconstruction stops preserving the characterized legacy coercion."
+
+  - id: builder-home-session-schema-versioned-lifecycle
+    area: builder-home
+    behavior: "Central session records require schema_version: 1 and follow the forward-only starting -> active -> reaping -> closed lifecycle."
+    invariant: "A missing/unsupported schema version, skipped transition, or non-starting record without a safe pgid never parses as a valid session."
+    guarding_tests:
+      - tests/unit/test_session_state_machine_contracts.py::test_session_schema_requires_supported_schema_version
+      - tests/unit/test_session_state_machine_contracts.py::test_session_schema_accepts_locked_forward_lifecycle_states
+      - tests/unit/test_session_state_machine_contracts.py::test_session_schema_rejects_invalid_transition_and_requires_pgid_after_starting
+    breaks_when: "parse_session_record drops require_schema_version, widens SESSION_TRANSITIONS to permit starting -> reaping, or removes the pgid > 1 check for non-starting states."
+
+  - id: builder-home-init-preview-confirm
+    area: builder-home
+    behavior: "isanna home init always renders an explicit scaffold preview and creates no .builder-home until the human re-runs it with --confirm."
+    invariant: "Home visibility and ownership are never activated as a side effect of installation or an unconfirmed init."
+    guarding_tests:
+      - tests/unit/test_builder_home_commands.py::test_home_init_preview_is_explicit_and_side_effect_free
+      - tests/unit/test_builder_home_commands.py::test_isanna_home_init_requires_confirm_to_write
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_installer_offers_home_init_but_does_not_create_home
+    breaks_when: "cmd_home calls apply_plan outside the args.confirm branch, scaffold_home writes while planning, or install.sh creates .builder-home instead of printing the opt-in command."
+
+  - id: builder-home-bia-import-preview-confirm
+    area: builder-home
+    behavior: "isanna home import-legacy (alias: import-bia) accepts only a source product named 'bia' (importer.py pins the subject), is preview-only by default, and writes its canonical declarations only on a separate invocation with --confirm."
+    invariant: "Inspecting a legacy import plan cannot alter builder.yaml, repositories.yaml, product.yaml, or release manifests."
+    guarding_tests:
+      - tests/unit/test_builder_home_commands.py::test_bia_import_preview_never_writes_unconfirmed
+      - tests/unit/test_builder_home_commands.py::test_isanna_bia_import_requires_confirm_to_write
+    breaks_when: "cmd_home calls apply_import_preview outside the args.confirm branch, or preview_bia_import performs any PlannedWrite itself."
+
+  - id: builder-home-lint-fails-canonical-violations
+    area: builder-home
+    behavior: "home lint and isanna lint report canonical Builder Home declaration violations and exit non-zero."
+    invariant: "A malformed canonical declaration cannot receive a clean lint verdict."
+    guarding_tests:
+      - tests/unit/test_builder_home_schema_contracts.py::test_lint_home_and_isanna_lint_exit_non_zero_on_canonical_declaration_violations
+    breaks_when: "lint_home suppresses ValidationError issues or lint_home_from_args returns 0 when findings is non-empty."
+
+  - id: builder-home-discovery-additive-legacy-stable
+    area: builder-home
+    behavior: "Planning and The Record layer canonical Builder Home discovery over legacy per-repo discovery; when no .builder-home is present, legacy Record output remains byte-stable."
+    invariant: "Opting into a home exposes declared projects, but merely installing/importing the home modules cannot perturb a standalone repository's generated bytes."
+    guarding_tests:
+      - tests/unit/test_record_home_discovery.py::test_record_build_uses_builder_home_intent_completeness
+      - tests/unit/test_record_phase0_stability.py::test_record_output_is_byte_stable_with_phase0_parser_module_present
+    breaks_when: "planning.Registry stops consulting load_optional_home for a discovered home, or record's no-home branch changes the legacy emission path/order/content."
+
+  - id: builder-home-many-to-many-project-resolution
+    area: builder-home
+    behavior: "A Builder Home resolves project-scoped aliases across many repositories and exposes shared specs, backlog, and release membership from canonical declarations."
+    invariant: "The same physical repo/spec may participate through a project alias without collapsing project context, and bare refs resolve through that project's default_repo."
+    guarding_tests:
+      - tests/unit/test_planning_home_registry.py::test_registry_discovers_canonical_home_projects_and_project_scoped_aliases
+      - tests/unit/test_planning_home_registry.py::test_home_releases_use_intent_denominator_and_preserve_member_verdicts
+      - tests/unit/test_planning_home_registry.py::test_home_fixture_exposes_backlog_and_shared_specs_without_legacy_product_files
+    breaks_when: "Registry resolves aliases globally instead of per project, ignores default_repo for bare refs, or drops canonical backlog/release declarations when building the home registry."
+
+  - id: builder-home-catalog-alias-integrity
+    area: builder-home
+    behavior: "The canonical repo catalog rejects duplicate physical repositories, and each project rejects duplicate aliases before either can make resolution ambiguous."
+    invariant: "One repo realpath has one catalog identity, and one project alias resolves to exactly one catalog repo."
+    guarding_tests:
+      - tests/unit/test_builder_home_schema_contracts.py::test_repo_catalog_flags_duplicate_realpaths_and_non_portable_absolutes
+      - tests/unit/test_builder_home_schema_contracts.py::test_strict_unknown_keys_and_duplicate_aliases_are_rejected
+    breaks_when: "parse_repositories_manifest stops comparing resolved repo paths, or parse_project_manifest stops tracking and rejecting a repeated alias."
+
+  - id: builder-home-policy-provider-contract
+    area: builder-home
+    behavior: "Builder Home policy declares both canonical providers and fixes project allocation to equal-weight fair share with weight 1."
+    invariant: "A missing canonical provider, unknown provider, or unequal project allocation cannot become an accepted scheduling policy."
+    guarding_tests:
+      - tests/unit/test_builder_home_schema_contracts.py::test_policy_parser_requires_both_canonical_provider_keys_and_equal_weight_allocation
+    breaks_when: "parse_policy_manifest stops requiring every CANONICAL_PROVIDERS entry, accepts unknown provider keys, or permits allocation.project_weight other than 1."
+
+  - id: builder-home-shared-repo-owner-integrity
+    area: builder-home
+    behavior: "A repo may be shared by multiple canonical projects, but lint fails when its legacy named owner no longer declares that repo."
+    invariant: "Legitimate many-to-many membership is not a conflict; only a canonical owner disowning a repo that still names it is reported as drift."
+    guarding_tests:
+      - tests/unit/test_builder_home_schema_contracts.py::test_shared_repo_across_projects_is_allowed_but_disowned_owner_is_flagged
+    breaks_when: "lint_loaded_home flags every multi-project repo as conflicting, or stops checking that the legacy product's canonical owner still contains the repo id."
+
+  - id: builder-home-release-intents-authored-order
+    area: builder-home
+    behavior: "Live release intents flatten into spec membership and dispatch actions in the order authored: release intent order first, then each intent's spec order."
+    invariant: "Intent expansion never sorts or groups members in a way that changes release order or roadmap_index."
+    guarding_tests:
+      - tests/unit/test_builder_home_release_intents.py::test_release_intents_flatten_in_original_order
+      - tests/unit/test_builder_home_release_intents.py::test_builder_home_flattens_intents_for_dispatch_in_authored_order
+    breaks_when: "home loading reorders release intents or their specs, or build_dispatch_plan derives roadmap_index from anything other than the flattened declaration order."
+
+  # ---------------------------------------------------------------- central scheduler (observe-only)
+  - id: scheduler-observe-only-oracle-zero-mutation
+    area: scheduler
+    behavior: "The central eligibility snapshot replays the legacy DispatchScheduler as its oracle against a temporary copy of each repo queue."
+    invariant: "Observe-only discovery returns the legacy dispatchable items and routes while never changing a live queue/runtime file or acquiring the repo scheduler lock."
+    guarding_tests:
+      - tests/unit/test_central_scheduler_observe_only.py::test_observe_only_replay_matches_legacy_scheduler_on_fixture_queues
+      - tests/unit/test_central_scheduler_observe_only.py::test_observe_only_snapshot_performs_zero_repo_runtime_mutations_and_never_acquires_repo_lock
+    breaks_when: "replay_observe_only reads through a scheduler backed by the live queue instead of its temporary copy, diverges from DispatchScheduler._dispatchable_items/_eligible_lanes, writes any repo runtime file, or calls acquire_scheduler_lock."
+
+  - id: scheduler-repo-controller-failure-isolation
+    area: scheduler
+    behavior: "Central discovery isolates a malformed or legacy-locked repo and continues presenting candidates from healthy repos."
+    invariant: "One repo's missing config, construction failure, or live legacy scheduler lock cannot suppress healthy sibling controllers or their eligible work."
+    guarding_tests:
+      - tests/unit/test_central_scheduler_observe_only.py::test_central_snapshot_is_deterministic_and_isolates_locked_and_malformed_repos
+      - tests/unit/test_builder_draining.py::test_controller_isolation_keeps_healthy_repo_candidates_when_a_sibling_repo_is_broken
+    breaks_when: "build_central_snapshot or controller discovery lets one repo exception escape the per-repo boundary, drops healthy sibling candidates, or treats a live legacy lock as healthy."
+
+  - id: scheduler-cross-repo-readiness-boundaries
+    area: scheduler
+    behavior: "A required cross-repo dependency defaults to merged readiness; available readiness requires explicit package metadata and a published satisfying version."
+    invariant: "Host verification alone and unresolved external prerequisites block downstream work, while the external prerequisite never becomes a declared release member or changes its percent denominator."
+    guarding_tests:
+      - tests/unit/test_builder_draining.py::test_readiness_blocks_cross_repo_until_upstream_is_merged_and_host_verified_alone_is_insufficient
+      - tests/unit/test_cross_repo_deps.py::test_enforce_blocks_when_upstream_is_only_verified_not_merged
+      - tests/unit/test_cross_repo_deps.py::test_enforce_satisfied_when_merged
+      - tests/unit/test_readiness.py::test_available_requires_a_published_version
+      - tests/unit/test_planning_home_registry.py::test_external_dependency_never_enters_release_membership_or_percent_denominator
+    breaks_when: "evaluate_cross_repo_dependencies changes the default ready_at from merged, readiness.evaluate treats verified or an unpublished package as merged/available, or planning.completeness adds a dependencies.yaml prerequisite to Release.specs."
+
+  - id: scheduler-first-admission-shared-spec-dedup
+    area: scheduler
+    behavior: "Physical work is deduplicated by (repo_id, spec_id), and its first active admission project remains the fairness owner when later memberships arrive."
+    invariant: "A queued, satisfied, or already-admitted physical spec is not enqueued twice; later memberships append to a durable state/admissions receipt without replacing its project attribution."
+    guarding_tests:
+      - tests/unit/test_builder_draining.py::test_admission_receipts_dedup_physical_specs_and_preserve_first_project_attribution
+      - tests/unit/test_builder_draining.py::test_admission_receipts_persist_under_home_state_admissions
+    breaks_when: "should_enqueue_physical stops checking queue/satisfied/admission state, AdmissionStore.write_receipt replaces an active receipt's project_id, creates a second physical receipt, or writes outside state/admissions."
+
+  - id: scheduler-equal-weight-work-conserving-fair-share
+    area: scheduler
+    behavior: "Fair-share visits attributed projects by deterministic equal-weight round-robin and orders each project by priority desc, roadmap_index asc, enqueued_at asc, then work_id asc."
+    invariant: "Only non-empty eligible groups receive turns, and the per-provider allocation cursor persists the last served project across selections."
+    guarding_tests:
+      - tests/unit/test_builder_draining.py::test_fair_share_is_deterministic_work_conserving_and_persists_cursor
+      - tests/unit/test_builder_draining.py::test_fair_share_uses_the_complete_sort_key_and_skips_absent_groups
+    breaks_when: "choose_candidate assigns unequal project service, advances through an absent/blocked group, fails to persist cursor_project_id, or sort_group removes/reorders any of priority, roadmap_index, enqueued_at, and work_id."
+
+  # ---------------------------------------------------------------- federated draining
+  - id: draining-allowlist-and-live-owner-refusal
+    area: draining
+    behavior: "Federated draining owns and launches only explicitly allow-listed repos, and a live legacy repo owner produces a loud refusal and is skipped."
+    invariant: "A repo absent from policy.governor.drain_repos cannot launch centrally, and central and legacy schedulers never launch from the same repo queue."
+    guarding_tests:
+      - tests/unit/test_builder_draining.py::test_draining_only_launches_allow_listed_repos_and_refuses_live_legacy_owner_loudly
+    breaks_when: "FederatedDrainer.allowed_repo_ids admits a repo outside drain_repos, start bypasses RepoController.acquire_ownership, suppresses the loud refusal finding, or retains the legacy-owned controller."
+
+  - id: draining-locked-recheck-reserve-before-spawn
+    area: draining
+    behavior: "At the launch boundary the drainer rechecks repo eligibility, provider capacity, and the repo lane ceiling under its launch lock, then reserves the provider slot before spawn."
+    invariant: "A stale candidate or exhausted ceiling is skipped; every provider spawn observes an already-persisted starting reservation."
+    guarding_tests:
+      - tests/unit/test_builder_draining.py::test_drain_launch_boundary_rechecks_both_ceilings_and_reserves_before_spawn_under_lock
+      - tests/unit/test_builder_draining.py::test_draining_enforces_repo_lane_ceiling_and_supports_synthetic_stop_reconcile_restart
+      - tests/unit/test_builder_governor.py::test_starting_reservation_exists_before_launcher_spawn
+    breaks_when: "drain_once moves recheck_candidate, lane_available, reserve_slot's provider-cap check, or reserve_slot outside the launch-lock boundary; ignores a full repo lane; or calls governor.launch before the starting session record exists."
+
+  # ---------------------------------------------------------------- authoring / admission UX
+  - id: authoring-canonical-editors-preview-confirm
+    area: authoring
+    behavior: "Canonical repo register/unregister, project/backlog/release editing, and release lifecycle changes render the selected Builder Home plus an exact diff/plan, write only with --confirm, and strict-parse declarations before writing."
+    invariant: "An unconfirmed authoring command changes no declaration, and an unknown declaration key cannot be normalized away by an editor write."
+    guarding_tests:
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_repo_register_preview_writes_nothing_until_confirm
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_backlog_edit_preview_and_confirm_follow_exact_plan
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_project_release_lifecycle_and_unregister_editors_preview_before_confirm
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_editor_strict_parse_rejects_unknown_keys_before_write
+    breaks_when: "a tested cmd_home editor calls apply_mutation_preview outside its args.confirm branch, render_mutation_preview omits the selected home or unified diff, or declaration loading/edit planning stops rejecting an unknown key before write."
+
+  - id: authoring-dispatch-plan-read-only
+    area: authoring
+    behavior: "A project dispatch-plan resolves a release roadmap into ordered per-repo actions and is read-only: it enqueues nothing."
+    invariant: "Viewing home status or a dispatch plan cannot add, remove, or transition any repo queue item."
+    guarding_tests:
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_home_status_and_dispatch_plan_are_read_only
+    breaks_when: "cmd_home's dispatch-plan branch or build_dispatch_plan writes through QueueStore instead of only returning and rendering DispatchPlanAction rows."
+
+  - id: authoring-declaration-path-hard-guard
+    area: authoring
+    behavior: "A lane packet hard-fails when allowed_change_files names builder.yaml, repositories.yaml, policy.yaml, projects/**/product.yaml, or projects/**/releases/**, including .builder-home-prefixed forms."
+    invariant: "Dispatched implementation lanes can never receive permission to edit a Builder Home declaration."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_packet_contract.py::test_declaration_path_guard_rejects_canonical_paths
+      - scripts/_dispatch_runtime/tests/test_packet_contract.py::test_declaration_path_guard_accepts_clean_allowed_files
+    breaks_when: "validate_packet_contract stops passing an allowed_change_files entry through _is_forbidden_declaration_path, or that matcher stops recognizing a canonical declaration path."
+
+  - id: authoring-admission-single-repo-correlation
+    area: authoring
+    behavior: "Every admission id resolves to exactly one repo id; zero matches and multi-repo matches are rejected."
+    invariant: "An admission can never be silently attributed to an arbitrary repo or proceed without a physical repo owner."
+    guarding_tests:
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_admission_resolution_returns_exactly_one_repo_and_rejects_ambiguity
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_admission_resolution_rejects_zero_matching_repos
+    breaks_when: "resolve_admission_repo returns when its matching repo-id set has size zero or greater than one, or stops returning the sole repo id when the set size is one."
+
+  - id: authoring-context-read-only-text-handoff
+    area: authoring
+    behavior: "Authoring reads Builder Home project context read-only and emits proposed declaration patches only as text handoff; it never self-applies them."
+    invariant: "Loading authoring context or generating a handoff cannot change product.yaml or any other canonical declaration."
+    guarding_tests:
+      - tests/unit/test_builder_authoring_and_home_ux.py::test_authoring_context_is_read_only_and_patch_is_text_only
+    breaks_when: "load_authoring_context or emit_declaration_patch_handoff writes a declaration, or the handoff stops rendering the planned unified diff as text."
+
+  # ---------------------------------------------------------------- migration / synthetic cutover
+  - id: migration-confirmed-bia-equivalence-runtime-unchanged
+    area: migration
+    behavior: "After a confirmed legacy import, fixture-only verification requires legacy-vs-home Record release equivalence while the source runtime tree remains byte-for-byte unmoved."
+    invariant: "Canonical migration cannot change legacy .specpilot runtime bytes or silently alter release membership/completeness."
+    guarding_tests:
+      - tests/unit/test_builder_phase6_migration.py::test_confirmed_import_verification_matches_legacy_and_leaves_runtime_bytes_unchanged
+      - tests/unit/test_builder_phase6_migration.py::test_import_verification_fails_loudly_when_canonical_membership_drifts
+      - tests/unit/test_builder_phase6_migration.py::test_isanna_import_bia_verify_record_runs_fixture_only_post_write_checks
+    breaks_when: "verify_bia_import stops comparing legacy and home release snapshots, stops comparing protected_before with protected_after, or the confirmed --verify-record CLI path suppresses a failed equivalence/runtime-byte report."
+
+  - id: cutover-synthetic-dry-run-confirmed-identity
+    area: cutover
+    behavior: "The synthetic cutover operator defaults to a no-write dry-run, requires confirmation for every applied step, and fails closed on legacy daemon or PGID identity mismatch."
+    invariant: "No synthetic state transition applies accidentally, and an unproven process identity is never treated as safe to stop or reconcile."
+    guarding_tests:
+      - tests/unit/test_builder_phase6_cutover.py::test_cutover_dry_run_writes_nothing
+      - tests/unit/test_builder_phase6_cutover.py::test_cutover_apply_requires_confirmation_for_each_selected_step
+      - tests/unit/test_builder_phase6_cutover.py::test_prove_gone_fails_closed_on_identity_mismatch
+      - tests/unit/test_builder_phase6_cutover.py::test_reconcile_legacy_pgids_fails_closed_on_unsafe_identity
+      - tests/unit/test_builder_phase6_cutover.py::test_dual_owner_attempt_fails_loudly
+      - tests/unit/test_builder_phase6_cutover.py::test_full_cutover_then_caps_hold_and_watchdogs_collapse
+    breaks_when: "CutoverOrchestrator defaults dry_run false, _require_confirmation permits an unconfirmed applied step, identity validation accepts identity_ok false/unsafe PGID evidence, or forward cutover permits simultaneous legacy and central ownership."
+
+  - id: cutover-rollback-restores-legacy-ownership
+    area: cutover
+    behavior: "The synthetic rollback package disables central launches, reconciles central groups, stops central ownership, releases repo locks, restores legacy watchdogs/daemons and legacy discovery, while retaining canonical Home files."
+    invariant: "Rollback restores the prior legacy launch topology without deleting the declarations created during migration."
+    guarding_tests:
+      - tests/unit/test_builder_phase6_cutover.py::test_cutover_rollback_restores_legacy_ownership_and_keeps_canonical_home_files
+    breaks_when: "run_rollback omits or reorders a rollback step so central ownership remains, legacy ownership/discovery is not restored, or rollback deletes or rewrites builder.yaml."
+
+  # ---------------------------------------------------------------- legacy launch retirement
+  - id: retirement-home-ownership-guards-legacy-entrypoints
+    area: retirement
+    behavior: "Both legacy launch entrypoints refuse a Home-owned repo before launch; the guard is inert without a Home and degrades a malformed Home loudly to standalone instead of creating a new outage."
+    invariant: "A centrally owned repo cannot launch through builder-dispatch run or builder-group-runner, while absent/broken Home declarations never block standalone operation."
+    guarding_tests:
+      - tests/unit/test_builder_ownership_guard.py::test_ownership_guard_returns_unowned_when_no_home_exists
+      - tests/unit/test_builder_ownership_guard.py::test_ownership_guard_only_owns_when_home_enabled_and_repo_is_drained
+      - tests/unit/test_builder_ownership_guard.py::test_ownership_guard_returns_unowned_when_governor_is_disabled
+      - tests/unit/test_builder_ownership_guard.py::test_ownership_guard_degrades_malformed_home_to_unowned_with_finding
+      - tests/unit/test_phase7_group_runner_guard.py::test_group_runner_refuses_owned_repo_before_loop_start
+      - tests/unit/test_phase7_group_runner_guard.py::test_group_runner_keeps_standalone_path_when_no_home_exists
+      - tests/unit/test_phase7_dispatch_run_guard.py::test_dispatch_run_refuses_owned_repo_before_scheduler_start
+      - tests/unit/test_phase7_dispatch_run_guard.py::test_dispatch_run_keeps_standalone_once_path_when_no_home_exists
+      - tests/unit/test_phase7_dispatch_run_guard.py::test_dispatch_run_malformed_home_warns_and_degrades_to_standalone
+      - tests/unit/test_phase7_dispatch_run_guard.py::test_group_runner_malformed_home_warns_and_degrades_to_standalone
+      - tests/unit/test_phase7_dispatch_run_guard.py::test_both_legacy_entrypoints_refuse_the_same_owned_repo
+    breaks_when: "either legacy entrypoint starts its scheduler/loop before evaluate_repo_ownership, evaluate_repo_ownership marks a no-home repo owned, or a Home parse failure raises/returns owned instead of an unowned result with a degraded-to-standalone finding."
+
+  # ---------------------------------------------------------------- governor / session ownership
+  - id: governor-opt-in-cutover
+    area: governor
+    behavior: "The central governor is inert unless a Builder Home exists and its strict governor.enabled policy flag is explicitly true; omission defaults OFF."
+    invariant: "Installing or discovering builder code never activates central session ownership without an opted-in home policy."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_policy_activation_requires_home_and_explicit_flag
+      - tests/unit/test_builder_home_schema_contracts.py::test_policy_parser_defaults_governor_off_accepts_true_and_rejects_unknown_governor_keys
+    breaks_when: "governor_enabled stops requiring both a non-null home and policy.governor_enabled, or parse_policy_manifest defaults an omitted governor.enabled to true or accepts a non-boolean/unknown governor policy shape."
+
+  - id: governor-reserve-before-spawn
+    area: governor
+    behavior: "A provider launcher is spawned only after an atomic central session reservation has been persisted in starting state."
+    invariant: "A crash before the reservation write consumes no capacity, while the launcher spawn boundary always observes its already-written starting slot."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_reservation_crash_before_write_does_not_consume_capacity_or_oversubscribe
+      - tests/unit/test_builder_governor.py::test_starting_reservation_exists_before_launcher_spawn
+    breaks_when: "SessionStore.reserve_slot writes before the injected before_reservation_write boundary, or BuilderGovernor launches a provider before the reserved starting record exists."
+
+  - id: governor-provider-capacity-independent
+    area: governor
+    behavior: "Provider capacity is computed independently as max_sessions minus that provider's starting, active, and reaping sessions."
+    invariant: "Idle capacity from one provider is never borrowed to oversubscribe another provider."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_provider_caps_are_independent_and_starting_active_reaping_all_consume_slots
+    breaks_when: "capacity_remaining counts sessions across providers, omits any of starting/active/reaping, or reserve_slot stops rejecting a provider whose own remaining capacity is zero."
+
+  - id: governor-launcher-identity-before-exec
+    area: governor
+    behavior: "Before exec, the launcher shim persists the owned group's PGID, leader start ticks, executable, and command digest in the session record."
+    invariant: "A parent crash after the identity write but before provider exec leaves complete durable identity evidence for reconciliation."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_launcher_shim_persists_complete_group_identity_before_exec
+      - tests/unit/test_builder_governor.py::test_launcher_shim_after_pgid_write_closes_when_recorded_group_is_already_gone
+    breaks_when: "launcher_main moves os.execvp before update_state or omits pgid, pgid_leader_start_ticks, executable, or command_digest from that pre-exec write."
+
+  - id: governor-slot-closes-after-full-group-reap
+    area: governor
+    behavior: "A session remains capacity-consuming in reaping state until its entire owned process group is gone, and only then closes the slot."
+    invariant: "Leader exit or a reap request alone never returns capacity while any member of the owned group remains live."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_reaping_consumes_slot_until_group_is_gone
+      - tests/unit/test_builder_governor.py::test_reconciliation_reaps_matching_live_recorded_group
+    breaks_when: "reap_session closes on leader exit or on entry to reaping instead of waiting for _pgid_group_alive to become false."
+
+  - id: governor-pid-start-ticks-identity-contract
+    area: governor
+    behavior: "current_pid_start_ticks returns the kernel process start-ticks identity for the requested PID and fails closed when that identity cannot be read."
+    invariant: "Daemon ownership records use the requested process's start ticks, never its numeric PID, a timestamp, or another process's identity."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_current_pid_start_ticks_matches_proc_identity_contract
+    breaks_when: "current_pid_start_ticks ignores the requested PID, returns the PID or another value instead of _proc_identity's start ticks, or accepts a missing process identity."
+
+  - id: governor-startup-reconciliation-fail-closed
+    area: governor
+    behavior: "Startup reconciliation fails closed: a live recorded owner, missing launcher proof, unsafe or missing PGID, or live command-identity mismatch is retained for human resolution rather than killed, released, or reattached."
+    invariant: "Only proven-no-child or proven-fully-gone sessions close; timestamps alone never expire a live capacity slot."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_reconciliation_refuses_live_dual_owner_for_starting_session
+      - tests/unit/test_builder_governor.py::test_reconciliation_quarantines_unproven_starting_session_and_live_identity_mismatch
+      - tests/unit/test_builder_governor.py::test_reconciliation_never_expires_stale_live_slot_and_unsafe_pgid_is_quarantined
+      - tests/unit/test_builder_governor.py::test_launcher_shim_before_pgid_write_closes_only_after_launcher_proves_no_child
+    breaks_when: "reconcile_startup or reap_session closes, kills, or reattaches on a live owner, absent launcher proof, pgid <= 1, stale reserved_at/updated_at, or failed start-ticks/executable/command-digest identity check."
+
+  - id: governor-global-cooldown-quota-only
+    area: governor
+    behavior: "Provider-global cooldowns open only for subscription, quota, or rate-limit failures; ordinary and unknown failures stay repo-local."
+    invariant: "Authentication, prompt/tool, test, artifact, delivery, and unclassified failures cannot freeze a provider across projects."
+    guarding_tests:
+      - tests/unit/test_builder_governor.py::test_only_quota_style_failures_open_provider_global_cooldown
+      - tests/unit/test_builder_governor.py::test_subscription_quota_and_rate_limit_are_the_only_provider_global_cooldown_classes
+    breaks_when: "GLOBAL_COOLDOWN_CLASSES gains an ordinary/unknown error class, loses subscription/quota/rate-limit, or open_provider_cooldown writes provider state for a class outside that set."
+
+  # ---------------------------------------------------------------- review pipeline
+  - id: verify-unconditional-every-count
+    area: review
+    behavior: "The host gate `verify` runs for every reviewer count including 0."
+    invariant: "Reviews catch design/impl defects; the host still runs the tests regardless — every phase order ends with verify."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_review_phases.py::test_per_spec_review_counts_select_orders_and_keep_verify
+    breaks_when: "phase_order_for_count(0) returns an order without verify."
+
+  - id: two-reviewers-need-distinct-proof
+    area: review
+    behavior: "reviews: 2 requires a DISTINCT proof artifact for the second reviewer (anti-theater)."
+    invariant: "A count-2 spec that only ran one reviewer fails the -2 completion gate — you cannot claim two reviewers while running one."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_review_phases.py::test_second_review_phases_require_distinct_proof_artifacts
+    breaks_when: "the -2 phases reuse review-log.yaml instead of review-log-2.yaml."
+
+  - id: three-reviewers-rejected-no-downgrade
+    area: review
+    behavior: "reviews: 3+ is rejected at lint AND at the dispatcher's completion validator — never a silent downgrade to 2."
+    invariant: "An unsupported reviewer count fails loudly, it does not run as something smaller."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_review_phases.py::test_reviews_two_is_accepted_and_three_is_rejected_by_spec_validation
+      - scripts/_dispatch_runtime/tests/test_review_phases.py::test_phase_completion_rejects_three_reviewers_without_downgrading
+    breaks_when: "the review_count > 2 rejection is widened or removed."
+
+  - id: next-phase-explicit-order-additive
+    area: review
+    behavior: "next_phase(order=...) honors the spec's own pipeline; the no-arg call is byte-identical to today's global behavior."
+    invariant: "Per-spec ordering did not change any existing caller's behavior."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_review_phases.py::test_next_phase_explicit_order_does_not_depend_on_active_global
+    breaks_when: "next_phase ignores the passed order and always uses the global."
+
+  # ---------------------------------------------------------------- readiness ladder
+  - id: merged-only-on-is-ancestor
+    area: readiness
+    behavior: "A spec reaches `merged` ONLY when git merge-base --is-ancestor exits 0."
+    invariant: "An agent cannot forge merged by writing delivery.yaml; a non-zero/unknown-ref/non-sha result is never merged."
+    guarding_tests:
+      - tests/unit/test_readiness.py::test_merged_only_on_is_ancestor_exit_zero
+      - tests/unit/test_readiness.py::test_unknown_ref_128_is_never_merged
+      - tests/unit/test_readiness.py::test_non_sha_commit_cannot_reach_merged
+    breaks_when: "the merged check treats a non-zero is-ancestor exit as merged."
+
+  - id: unmarked-delivery-untrusted
+    area: readiness
+    behavior: "An unmarked/unrecognized delivery record is untrusted and never weakens the ladder."
+    invariant: "Only a host-authored, recognized delivery.yaml can raise readiness."
+    guarding_tests:
+      - tests/unit/test_readiness.py::test_unmarked_delivery_record_is_untrusted
+    breaks_when: "readiness trusts an unmarked delivery record as delivered/merged."
+
+  # ---------------------------------------------------------------- runtime dir / migrate
+  - id: runtime-dir-canonical
+    area: runtime
+    behavior: "runtime_dir always resolves to .builder/; the .specpilot fallback was removed."
+    invariant: "Legacy .specpilot/ presence never changes the canonical runtime path."
+    guarding_tests:
+      - tests/unit/test_runtime_paths.py::test_runtime_dir_uses_builder_when_only_specpilot_exists
+      - tests/unit/test_runtime_paths.py::test_runtime_dir_prefers_builder_when_it_exists
+      - tests/unit/test_runtime_paths.py::test_runtime_dir_prefers_builder_when_both_candidates_exist
+      - tests/unit/test_runtime_paths.py::test_runtime_dir_uses_builder_when_neither_candidate_exists
+      - tests/unit/test_runtime_paths.py::test_load_releases_reads_builder_runtime_directory
+    breaks_when: "runtime_dir selects any directory other than .builder."
+
+  - id: migrate-refuses-live-daemon
+    area: migrate
+    behavior: "isanna migrate refuses to move a runtime dir while the dispatcher is live (scheduler-lock owner alive, or a live pgid), and never merges an existing .builder or follows a symlink."
+    invariant: "A live daemon is an absolute refusal; a stale lock does not block."
+    guarding_tests:
+      - tests/unit/test_migrate.py::test_migrate_refuses_live_scheduler_but_allows_stale_lock
+      - tests/unit/test_migrate.py::test_migrate_refuses_live_pgid_but_ignores_dead_pgid
+      - tests/unit/test_migrate.py::test_migrate_refuses_existing_builder_even_with_force
+      - tests/unit/test_migrate.py::test_migrate_refuses_specpilot_symlink
+    breaks_when: "a liveness refusal (_live_lock / _live_pgids / existing-.builder / symlink) is removed."
+
+  - id: migrate-liveness-probe-is-read-only
+    area: migrate
+    behavior: "The migrate pgid liveness probe uses signal 0 only — it checks, it never kills."
+    invariant: "Detecting a live process group must never terminate it."
+    guarding_tests:
+      - tests/unit/test_migrate.py::test_pgid_liveness_probe_only_uses_signal_zero
+    breaks_when: "_pgid_group_alive sends any signal other than 0 (e.g. SIGTERM)."
+
+  # ---------------------------------------------------------------- instrumentation (honest accounting)
+  - id: instrumentation-honest-no-fake-split
+    area: instrumentation
+    behavior: "Per attempt, the concrete model + real token/time usage are recorded; codex's token TOTAL is parsed, never split into a fabricated input/output."
+    invariant: "codex plan_tokens_in/out stay 0 (it reports no split); total_tokens and used_model are always present."
+    guarding_tests:
+      - tests/unit/test_dispatch_lanes.py::test_codex_lane_records_reported_total_usage_model_and_wall_duration
+      - tests/unit/test_dispatch_lanes.py::test_claude_lane_preserves_envelope_usage_duration_and_model
+      - tests/unit/test_finalize_turn_metadata.py::test_finalize_turn_always_carries_usage_metadata_keys
+    breaks_when: "the codex lane fabricates an in/out split, drops the model, or finalize_turn zeroes total_tokens."
+
+  # ---------------------------------------------------------------- host gate
+  - id: host-verify-gate-fails-safe
+    area: host-gate
+    behavior: "The host_verify gate enforces by default; a config typo does not silently disable it; no commands cannot gate; a failing gate blocks completion."
+    invariant: "The gate never fails open — an unrecognized mode does not become OFF."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_host_verify.py::test_gate_enforces_by_default
+      - scripts/_dispatch_runtime/tests/test_host_verify.py::test_gate_typo_does_not_silently_disable
+      - scripts/_dispatch_runtime/tests/test_host_verify.py::test_gate_no_commands_cannot_gate
+      - scripts/_dispatch_runtime/tests/test_host_verify.py::test_gate_enforce_fail_blocks
+    breaks_when: "an unrecognized gate mode defaults to OFF, or a failing gate returns complete."
+
+  - id: source-diff-ignores-specpilot-only
+    area: host-gate
+    behavior: "A turn that changed only .specpilot/ (no real source) does not pass source_diff."
+    invariant: "Bookkeeping churn is not code change; the diff gate sees through it."
+    guarding_tests:
+      - scripts/_dispatch_runtime/tests/test_host_verify.py::test_source_diff_fail_when_only_specpilot_changed
+    breaks_when: "the source-path filter stops excluding .specpilot."
+
+  # ---------------------------------------------------------------- the SSOT keeps itself honest
+  - id: sync-keeps-the-ssot-honest
+    area: cli
+    behavior: "isanna sync refreshes the spec-derived model and FAILS if the behavioral SSOT names a behavior with no live, gated test."
+    invariant: "You cannot finish a spec while this SSOT claims a behavior the host cannot verify; a missing SSOT or semantic adapter is non-zero bootstrap_required."
+    guarding_tests:
+      - tests/unit/test_isanna.py::test_sync_is_green_when_the_behavioral_ssot_is_honest
+      - tests/unit/test_isanna.py::test_sync_fails_when_the_ssot_names_a_test_that_is_not_there
+      - tests/unit/test_isanna.py::test_sync_treats_a_missing_ssot_as_explicit_bootstrap_required
+    breaks_when: "cmd_sync stops running the behavioral drift check or ignores its findings."
+
+  - id: ssot-drift-check-cannot-be-fooled
+    area: cli
+    behavior: "The SSOT drift check reports a documented behavior whose guarding test does not exist, and one whose test the gate never runs."
+    invariant: "A behavior 'guarded' by a missing or ungated test is drift the check must surface — it cannot pass silently."
+    guarding_tests:
+      - tests/unit/test_system_behaviors.py::test_the_behavioral_ssot_has_no_drift
+      - tests/unit/test_system_behaviors.py::test_the_drift_check_catches_a_documented_behavior_whose_test_is_missing
+      - tests/unit/test_system_behaviors.py::test_the_drift_check_flags_a_test_the_gate_never_runs
+    breaks_when: "check_behavior_drift stops verifying that each guarding_test exists and is covered by the gate."
+
+  # ---------------------------------------------------------------- river-capture-skill (authoring)
+  - id: harness-idea-capture
+    area: authoring
+    behavior: "The /idea skill and `isanna capture` CLI write ONLY a proposed intent (never accepted/rejected/superseded), refuse an unsafe/traversal id BEFORE writing anything, and work with no controlling TTY."
+    invariant: "capture_intent always writes status: proposed; an unsafe id leaves .builder/intents/ untouched; the CLI does not require a controlling terminal to complete."
+    guarding_tests:
+      - tests/unit/test_intent_capture.py::test_capture_writes_proposed_intent
+      - tests/unit/test_intent_capture.py::test_capture_status_is_never_accepted
+      - tests/unit/test_intent_capture.py::test_capture_cli_needs_no_controlling_tty
+      - tests/unit/test_intent_capture.py::test_capture_refuses_unsafe_id_without_writing
+      - tests/unit/test_intent_capture.py::test_idea_skill_states_propose_only
+    breaks_when: "capture_intent ever writes a status other than proposed, writes into an unsafe/traversal id path before refusing, or the CLI verb starts requiring a controlling tty."
+
+  # ---------------------------------------------------------------- river-backlog-tending (authoring)
+  - id: backlog-tending
+    area: authoring
+    behavior: "Backlog ranking writes only a rank sidecar (never mutates intent files); `promote` refuses on a capability collision or an incomplete collision index; `retire` requires a reason and goes through the accept/reject gate; `garden review` is read-only."
+    invariant: "rank_intent never touches an intent.yaml; promote/retire never proceed past an unresolved collision or a missing reason; garden_review mutates nothing on disk."
+    guarding_tests:
+      - tests/unit/test_backlog_tending.py::test_rank_intent_writes_sidecar_only
+      - tests/unit/test_backlog_tending.py::test_promote_refuses_capability_collision
+      - tests/unit/test_backlog_tending.py::test_promote_refuses_when_collision_index_is_incomplete
+      - tests/unit/test_backlog_tending.py::test_retire_requires_reason_and_gate
+      - tests/unit/test_backlog_tending.py::test_garden_review_mutates_nothing
+    breaks_when: "rank_intent writes into an intent's own file, promote/retire skip the collision-index or reason/gate check, or garden_review writes any sidecar or intent file."
+
+  # ---------------------------------------------------------------- river-persona-routing (review)
+  - id: phase-persona-routing
+    area: review
+    behavior: "Every review-pipeline phase resolves to exactly one staffed persona; implement is staffed data-engineer when the declared ssot_delta touches a schema/migration/pipeline target, else developer (including on a missing/malformed delta); when a persona is unresolvable, the phase goal is byte-identical to the persona-free goal instead of half-rendering."
+    invariant: "persona_for_phase never leaves a REVIEW2_SPEC_PHASE_ORDER phase unstaffed; a malformed ssot_delta always falls back to DEVELOPER, never raises or silently picks DATA_ENGINEER; a persona-resolution failure never leaves a partial STAFFING PERSONA block in the goal text."
+    guarding_tests:
+      - tests/unit/test_personas.py::test_every_review_pipeline_phase_has_a_persona
+      - tests/unit/test_personas.py::test_implement_is_data_engineer_on_schema_delta
+      - tests/unit/test_personas.py::test_implement_delta_missing_or_malformed_falls_back_to_developer
+      - tests/unit/test_personas.py::test_phase_goal_is_byte_identical_when_persona_unresolvable
+    breaks_when: "persona_for_phase leaves any pipeline phase unstaffed, misclassifies a malformed/non-dict ssot_delta as a schema touch, or build_phase_goal emits a corrupt/partial STAFFING PERSONA block when persona resolution raises."
+
+  # ---------------------------------------------------------------- river-persona-routing (review)
+  - id: cross-model-review-staffing
+    area: review
+    behavior: "No persona reviews its own phase's output; adversarial-review always runs on a different model family than implement; when the author lane is codex, review is forced onto the independent non-codex lane even if codex is the preferred provider; a lane configuration with only same-family providers raises instead of silently reviewing with the author's own family."
+    invariant: "persona_for_phase(review) != persona_for_phase(authored phase); model_family_for_phase(adversarial-review) != model_family_for_phase(implement); select_independent_review_lane never returns a same-family lane — it raises ValueError when none exists."
+    guarding_tests:
+      - tests/unit/test_personas.py::test_no_persona_judges_its_own_output
+      - tests/unit/test_personas.py::test_adversarial_review_is_a_different_model_family_than_author
+      - tests/unit/test_personas.py::test_codex_author_uses_anthropic_review_lane_even_when_codex_is_preferred
+      - tests/unit/test_personas.py::test_same_family_only_review_configuration_raises
+    breaks_when: "persona_for_phase resolves an author phase and its review phase to the same persona, model_family_for_phase reports the same family for implement and adversarial-review, or select_independent_review_lane picks a same-family lane instead of raising."
+
+  # ---------------------------------------------------------------- river-driver-and-gate-policy (host-gate)
+  - id: graduated-gate-approval
+    area: host-gate
+    behavior: "Lane A (low-risk, e.g. docs-only) flows straight through plan->implement with no human gate as long as required plan artifacts exist; lane C (policy-listed high-risk surfaces) never auto-opens on elapsed time — it opens ONLY on an explicit recorded approval; a held gate stays closed regardless of how long it has been pending; the gate engine never lowers a proposed lane below the architect's declared floor."
+    invariant: "a lane-A item missing required artifacts still holds at the gate; _process_veto_windows never opens a lane-C marker on time alone; hold_veto_window keeps a held gate closed across _process_veto_windows calls; gate_policy.decide's resolved lane is always >= the proposed floor."
+    guarding_tests:
+      - tests/unit/test_graduated_gate_approval.py::test_lane_a_flows_through_with_no_human_action_lane_a_or_lane_c
+      - tests/unit/test_graduated_gate_approval.py::test_lane_c_surface_holds_closed_regardless_of_elapsed_time_lane_a_or_lane_c
+      - tests/unit/test_graduated_gate_approval.py::test_lane_c_opens_only_after_explicit_recorded_approval_lane_a_or_lane_c
+      - tests/unit/test_graduated_gate_approval.py::test_hold_action_prevents_the_gate_from_opening
+      - tests/unit/test_gate_policy.py::test_engine_never_lowers_below_the_proposed_floor
+    breaks_when: "the scheduler auto-passes a lane-A item with missing plan artifacts, a lane-C marker opens from elapsed time alone, hold_veto_window fails to keep a held gate closed, or gate_policy.decide resolves below the proposed floor."
+
+  # ---------------------------------------------------------------- river-driver-and-gate-policy (scheduler)
+  - id: driver-liveness-watchdog
+    area: scheduler
+    behavior: "The LLM-free driver-liveness watchdog pages the owner when the driver heartbeat is stale OR its recorded pid is dead (even with a fresh timestamp), stays silent for a live driver with a fresh heartbeat, and never imports the driver process it watches — so a hung driver can never hang its own watchdog."
+    invariant: "ensure_once pages on a stale heartbeat, a dead pid, or a missing/malformed heartbeat file; ensure_once does not page a live pid with a fresh heartbeat; the watchdog module source never imports or dynamically loads builder_driver."
+    guarding_tests:
+      - tests/unit/test_driver_liveness_watchdog.py::test_detects_stall_from_stale_heartbeat_and_pages_owner
+      - tests/unit/test_driver_liveness_watchdog.py::test_detects_stall_from_dead_pid_even_with_a_fresh_timestamp_detects_stall
+      - tests/unit/test_driver_liveness_watchdog.py::test_live_driver_with_fresh_heartbeat_is_not_paged_detects_stall
+      - tests/unit/test_driver_liveness_watchdog.py::test_watchdog_module_never_imports_the_driver_it_watches
+    breaks_when: "ensure_once fails to page on a stale heartbeat or a dead pid, pages a live driver spuriously, or driver_liveness_watchdog.py gains an import/dynamic load of builder_driver."
+
+  # ---------------------------------------------------------------- sync-readmission-tool (cli)
+  - id: sync-bootstrap-readmission
+    area: cli
+    behavior: "sync-readmit is never surfaced by autonomous dispatch (absent from builder-dispatch.py, the scheduler, and the fallback runner) — only a human types it; it refuses an already-synced spec; the bootstrap authorization exception is consumed exactly once per spec; a bundle whose baseline evidence predates the cutoff is rejected as missing-immutable-identity, never silently readmitted."
+    invariant: "no dispatch-surface file references the string 'sync-readmit'; readmit_spec on an already-synced spec is refused; a second readmit_spec call after a successful bootstrap-exception readmission raises ReadmitFailure(bootstrap-exception-expired); a reconstructed/stale evidence bundle raises ReadmitFailure(missing-immutable-identity)."
+    guarding_tests:
+      - tests/unit/test_sync_readmit_is_human_initiated.py::test_dispatch_surfaces_do_not_expose_sync_readmit_implicitly
+      - tests/unit/test_sync_readmit_cli.py::test_sync_readmit_rejects_already_synced
+      - tests/unit/test_sync_readmission_bootstrap_exception.py::test_sync_readmission_consumes_bootstrap_exception_once
+      - tests/unit/test_sync_readmission_bootstrap_exception.py::test_bootstrap_exception_rejects_bundle_after_cutoff
+    breaks_when: "a dispatch-surface file starts referencing sync-readmit, readmit_spec accepts an already-synced spec, the bootstrap exception can be consumed more than once, or a stale/reconstructed bundle passes the cutoff check."
+
+  # ---------------------------------------------------------------- hand-curated (no spec dir; see file's own maintenance note)
+  - id: dispatch-pause-continue-gc
+    area: scheduler
+    behavior: "`builder-dispatch pause <id>` makes a queued item undispatchable without cancelling it; `continue` re-queues a paused item back into normal dispatch; `gc` deletes terminal (failed/cancelled) item records plus their attempts/events while keeping active/paused items, is a true no-op under --dry-run, and with --orphans also removes attempt/event records whose work item is already gone."
+    invariant: "a paused item is never picked up by dispatch_once; continue leaves the item QUEUED and dispatchable; gc never deletes a queued or paused item; gc --dry-run deletes nothing; gc --orphans removes only attempt/event records with no matching work item."
+    guarding_tests:
+      - tests/unit/test_dispatch_item_pause_gc.py::test_pause_makes_item_undispatchable
+      - tests/unit/test_dispatch_item_pause_gc.py::test_continue_requeues_and_dispatches
+      - tests/unit/test_dispatch_item_pause_gc.py::test_gc_removes_terminal_keeps_active
+      - tests/unit/test_dispatch_item_pause_gc.py::test_gc_dry_run_deletes_nothing
+      - tests/unit/test_dispatch_item_pause_gc.py::test_gc_orphans_removes_attempts_events_with_no_work_item
+    breaks_when: "a paused item still gets dispatched, continue leaves an item non-dispatchable, gc deletes an active/paused item or mutates anything under --dry-run, or --orphans fails to remove attempt/event records with no matching work item."
+
+  - id: interrupted-install-never-claims-success
+    area: install
+    behavior: "An interrupted install aborts with a non-zero status and prints no success banner: both install.sh and the standalone bundle clean up, restore the signal's default disposition, and re-raise it."
+    invariant: "A signal sent to an installer is never swallowed — cancelling an install always has an observable effect, and a run that did not finish never reports that it did."
+    guarding_tests:
+      - tests/unit/test_standalone_installer_signals.py::test_a_real_ctrl_c_aborts_the_standalone_install_without_claiming_success
+      - tests/unit/test_standalone_installer_signals.py::test_a_signal_to_the_installer_shell_alone_is_not_swallowed
+      - tests/unit/test_standalone_installer_signals.py::test_the_signal_traps_did_not_break_an_ordinary_install
+    breaks_when: "either installer points its INT/TERM/HUP traps straight at a cleanup handler that does not exit — a trap handler that returns RESUMES the script, so the signal is swallowed and the install runs on to print its success banner."
+
+  - id: install-without-a-terminal-refuses-clearly
+    area: install
+    behavior: "With no controlling terminal and no --yes, install.sh refuses with a message naming --yes and writes nothing, instead of dying on a raw `cannot open /dev/tty` error."
+    invariant: "The confirmation is read from the terminal (stdin is the pipe on the documented curl-pipe-sh path), and its absence is a handled refusal rather than a shell-level crash."
+    guarding_tests:
+      - tests/unit/test_installer_no_tty.py::test_no_terminal_and_no_yes_refuses_clearly_and_writes_nothing
+      - tests/unit/test_installer_no_tty.py::test_the_guard_refuses_only_the_prompt_not_the_install
+    breaks_when: "the /dev/tty probe is removed, moved out of its subshell (a failed redirection on the `exec` special builtin is fatal to dash, reproducing the crash), or replaced with a stdin test like `[ ! -t 0 ]`, which would refuse the documented `curl ... | sh` install."
+
+  - id: discovery-tolerates-unreadable-siblings
+    area: planning
+    behavior: "Registry discovery skips a sibling directory it cannot read and reports an unreadable projects root as a finding, instead of raising PermissionError out of the command."
+    invariant: "Another directory's permissions are never reported as a failure of this repo."
+    guarding_tests:
+      - tests/unit/test_discovery_unreadable_sibling.py::test_an_unreadable_sibling_directory_does_not_break_discovery
+      - tests/unit/test_discovery_unreadable_sibling.py::test_an_unreadable_projects_root_is_reported_not_raised
+    breaks_when: "_legacy_product_files stops guarding is_dir()/is_file() against OSError — Path.is_file() propagates EACCES, so one unreadable sibling takes down the whole scan."
+
+# Honest gaps: capability/journey ssot-delta targets with NO landing surface of their own (isanna
+# model keys capabilities as `cap:<spec-slug>` only — there is no capabilities/journeys section of
+# this file to land them in), plus the one behavior whose full proof is human-only and cannot run in
+# the gate. An undocumented-because-unverifiable claim is a gap to flag, not a fake
+# entry to write. A `gaps` id must never collide with a `behaviors` id (scripts/_validators/behaviors.py
+# fails the check if it does).
+gaps:
+  - id: idea-capture
+    area: capability
+    gap: "river-capture-skill declares capability target `idea-capture` (ssot-delta.yaml) with no landing surface in this file — capabilities are not modeled here (isanna model keys them as cap:<spec-slug> only)."
+    why_untested: "no capabilities: section exists in system-behaviors.yaml to anchor a test to; the underlying behavior (harness-idea-capture) IS documented and guarded above."
+
+  - id: persona-runner-profiles
+    area: capability
+    gap: "river-persona-routing declares capability target `persona-runner-profiles` with no landing surface in this file."
+    why_untested: "same as idea-capture — no capabilities section; phase-persona-routing and cross-model-review-staffing are documented above as behaviors."
+
+  - id: gate-lane-policy
+    area: capability
+    gap: "river-driver-and-gate-policy declares capability target `gate-lane-policy` with no landing surface in this file."
+    why_untested: "same as idea-capture — no capabilities section; graduated-gate-approval is documented above as a behavior."
+
+  - id: driver-loop
+    area: capability
+    gap: "river-driver-and-gate-policy declares capability target `driver-loop` with no landing surface in this file."
+    why_untested: "same as idea-capture — no capabilities section; driver-liveness-watchdog is documented above as a behavior."
+
+  - id: sync-admission-evidence
+    area: capability
+    gap: "sync-readmission-tool declares capability target `sync-admission-evidence` (enrich) with no landing surface in this file."
+    why_untested: "same as idea-capture — no capabilities section; sync-bootstrap-readmission is documented above as a behavior."
+
+  - id: idea-to-backlog
+    area: journey
+    gap: "river-capture-skill declares journey target `idea-to-backlog` with no landing surface in this file — journeys are not modeled here either."
+    why_untested: "no journeys: section exists in system-behaviors.yaml; the individual behaviors it spans (harness-idea-capture, backlog-tending) ARE documented above."
+
+  - id: spec-design-review-separation
+    area: journey
+    gap: "river-persona-routing declares journey target `spec-design-review-separation` with no landing surface in this file."
+    why_untested: "same as idea-to-backlog — no journeys section; the individual behaviors it spans (phase-persona-routing, cross-model-review-staffing) are documented above."
+
+  - id: intent-to-fulfilled-unattended
+    area: journey
+    gap: "river-driver-and-gate-policy declares journey target `intent-to-fulfilled-unattended` with no landing surface in this file."
+    why_untested: "same as idea-to-backlog — no journeys section; the individual behaviors it spans (graduated-gate-approval, driver-liveness-watchdog) are documented above."
+
+  - id: sync-readmission-live-clone-proof
+    area: cli
+    gap: "The full sync-readmit -> sync live clone-proof (test_sync_readmission_end_to_end.py::test_canonical_proof_spec_chain_is_readmitted_only_in_a_hermetic_clone) only runs when BUILDER_LIVE_READMISSION_PROOF=1 is set — it is skipped in the gate by default."
+    why_untested: "the proof clones the real repo and drives a real git history; that is deliberately human-gated (env var), not something `make gate` runs unattended. sync-bootstrap-readmission above is guarded by the always-running unit tests instead."

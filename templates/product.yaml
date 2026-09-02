@@ -1,0 +1,5 @@
+# Product identity and the repositories whose aliases release refs may use.
+product: example-product
+title: Example Product
+repos:
+  - alias: example-repo

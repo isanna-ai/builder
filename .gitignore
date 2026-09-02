@@ -1,0 +1,22 @@
+.builder-staging-*
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.aider*
+.venv/
+*.egg-info/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/gate-evidence/
+**/record/
+.builder/worktrees/
+.builder/dispatch-queue/
+
+# runtime dispatcher state + eval telemetry scratch (never tracked)
+.builder/locks/
+.builder/telemetry/events/memory-eval/
+
+# daemon-regenerated product model (deterministic from tracked specs; republished by isanna sync) -- runtime state, not tracked
+.builder/model/system-model.yaml

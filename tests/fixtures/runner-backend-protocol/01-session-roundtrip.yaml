@@ -1,0 +1,13 @@
+scenario: 01-session-roundtrip
+description: >
+  Two-turn conversation with a FakeBackend. The model replies with plain text in
+  both turns. Verifies that PhaseSessionHandle advances through the scripted
+  turns and that SessionTrace reflects the correct turn_count.
+scripted_turns:
+  - content: "What do you need?"
+    tool_calls: []
+  - content: "Done."
+    tool_calls: []
+expected_outcome: >
+  SessionTrace.turn_count == 2 and both AssistantTurn.content values match the
+  scripted sequence.

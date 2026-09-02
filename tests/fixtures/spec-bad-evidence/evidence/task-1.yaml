@@ -1,0 +1,17 @@
+task_id: T1
+entries:
+  - id: E1-red
+    step: red
+    command: bash tests/test_thing.sh
+    exit_code: 0
+    output_summary: Tests passed (INTENTIONAL FAULT — RED must have non-zero exit_code)
+  - id: E1-green
+    step: green
+    command: bash tests/test_thing.sh
+    exit_code: 0
+    output_summary: Tests pass
+  - id: E1-verify
+    step: verify
+    command: bash tests/test_thing.sh
+    exit_code: 0
+    output_summary: Final verification passed

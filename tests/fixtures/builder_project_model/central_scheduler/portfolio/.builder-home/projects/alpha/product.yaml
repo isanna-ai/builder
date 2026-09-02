@@ -1,0 +1,13 @@
+schema_version: 1
+product: alpha
+title: Alpha
+description: Alpha project
+default_repo: alpha-repo
+repos:
+  - alias: alpha
+    repo_id: alpha-repo
+backlog:
+  - alpha-backlog
+releases:
+  - name: alpha-release
+    manifest: releases/alpha-release.yaml

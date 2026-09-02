@@ -1,0 +1,119 @@
+type: object
+required: [artifact, title, spec, responsibility_allocation, core_changes, telemetry_strategy, verification_strategy]
+properties:
+  artifact:
+    type: string
+    const: design
+  title:
+    type: string
+  spec:
+    type: string
+  responsibility_allocation:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      # `id` is documented (D-id convention) but NOT required and NOT pattern-
+      # constrained yet: existing designs use free-form slug ids (billing-role-
+      # migration, ...). Enforce the ^D[0-9]+$ pattern + required only after a
+      # backfill migration (with BUILDER_TRACE_COVERAGE=enforce).
+      required: [surface, keep, change, why]
+      properties:
+        id:
+          type: string
+        surface:
+          type: string
+        keep:
+          type: string
+        change:
+          type: string
+        why:
+          type: string
+  core_changes:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      # `id` + `requirements` documented but not required and not pattern-
+      # constrained yet (staged; see responsibility_allocation note above).
+      required: [title, summary]
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        requirements:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            pattern: ^R[0-9]+$
+  risks:
+    type: array
+    items:
+      type: object
+      # No required key: existing designs express a risk as `risk:` OR `statement:`
+      # (some also carry id/mitigation). Both shapes validate; unknown keys allowed.
+      required: []
+      properties:
+        risk:
+          type: string
+        statement:
+          type: string
+        mitigation:
+          type: string
+  affected_contracts:
+    type: array
+    items:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        kind:
+          enum: [api, schema, migration, cli, config, event, other]
+        change:
+          type: string
+  # OPTIONAL. Structured rollback / migration contract. Not in the top-level
+  # `required` list and no sub-field is required here, so existing designs stay
+  # valid. The REQUIREMENT that a destructive/irreversible change (per intent
+  # `change_risk`) populate this — with a forward + rollback command and
+  # rollback verification — is enforced doc-level in the /isanna-2-design prompt and
+  # the implement guardrails, not by this schema.
+  migration_strategy:
+    type: object
+    properties:
+      preconditions:
+        type: array
+        items:
+          type: string
+      preservation_invariants:
+        type: array
+        items:
+          type: string
+      forward_command:
+        type: string
+      rollback_command:
+        type: string
+      rollback_window:
+        type: string
+      rollback_verification:
+        type: array
+        items:
+          type: string
+  telemetry_strategy:
+    type: array
+    minItems: 1
+    items:
+      type: string
+  verification_strategy:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [command]
+      properties:
+        command:
+          type: string

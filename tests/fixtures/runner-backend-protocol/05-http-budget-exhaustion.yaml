@@ -1,0 +1,9 @@
+scenario: 05-http-budget-exhaustion
+description: >
+  A BudgetTracker with max_calls=2 is exhausted by two record_call invocations.
+  The third check() call returns PolicyDenied with rule_id == "http_budget" and
+  a populated BudgetSnapshot.
+scripted_turns: []
+expected_outcome: >
+  PolicyDenied with rule_id == "http_budget" and budget_snapshot.calls_used == 2
+  is returned by BudgetTracker.check() after two record_call calls.

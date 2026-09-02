@@ -1,0 +1,9 @@
+decisions:
+  - id: D1
+    phase: 1-specify
+    timestamp: 2026-01-01T01:00:00Z
+    question: "Which approach to use?"
+    chosen: "Approach A"
+    alternatives:
+      - "Approach B"
+    rationale: "Simpler and more aligned with existing patterns."

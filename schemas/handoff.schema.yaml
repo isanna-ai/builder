@@ -1,0 +1,22 @@
+type: object
+required: [artifact, phase, summary, files_written, used_model, model_advice, next_phase, next_command]
+properties:
+  artifact:
+    type: string
+    const: handoff
+  phase:
+    type: string
+  summary:
+    type: string
+  files_written:
+    type: array
+    items:
+      type: string
+  used_model:
+    type: string
+  model_advice:
+    type: string
+  next_phase:
+    type: string
+  next_command:
+    type: string

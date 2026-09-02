@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# isanna — the host runs the tests. the agent does not get a vote.
+#
+# Resolves through symlinks so this stays correct when linked onto PATH
+# (ln -s /path/to/builder/bin/isanna ~/.local/bin/isanna).
+set -euo pipefail
+
+target="${BASH_SOURCE[0]}"
+while [ -L "$target" ]; do
+  dir="$(cd -P "$(dirname "$target")" && pwd)"
+  target="$(readlink "$target")"
+  [[ $target != /* ]] && target="$dir/$target"
+done
+ROOT="$(cd -P "$(dirname "$target")/.." && pwd)"
+
+exec env PYTHONPATH="$ROOT/scripts${PYTHONPATH:+:$PYTHONPATH}" \
+  "${ISANNA_PYTHON:-python3}" "$ROOT/scripts/isanna.py" "$@"

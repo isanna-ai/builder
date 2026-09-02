@@ -1,0 +1,83 @@
+type: object
+required: [artifact, event_id, recorded_at, command, mode, used_model, thinking_effort, capture_source, reason_category, intent_summary, execution_path, artifacts_read, artifacts_written, validation_refs, outcome_category, next_command, redaction]
+properties:
+  artifact:
+    type: string
+    const: workflow-event
+  event_id:
+    type: string
+    pattern: ^EVT-[A-Za-z0-9._:-]+$
+  recorded_at:
+    type: string
+    pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$
+  command:
+    type: string
+  mode:
+    type: string
+    enum: [lifecycle, utility]
+  phase:
+    type: string
+  spec:
+    type: string
+  intent_id:
+    type: string
+  used_model:
+    type: string
+  used_model_class:
+    type: string
+  thinking_effort:
+    type: string
+    enum: [low, medium, high, xhigh, unknown]
+  capture_source:
+    type: string
+    enum: [agent_self_report, runtime_measured, unavailable]
+  input_tokens:
+    type: integer
+  output_tokens:
+    type: integer
+  total_tokens:
+    type: integer
+  latency_ms:
+    type: integer
+  tokens_per_second:
+    type: number
+  reason_category:
+    type: string
+    enum: [phase_progress, phase_rework, validator_failure, human_redirect, exploration, archival, telemetry_analysis, fallback_planned, fallback_drift, fallback_starvation, fallback_verify_overflow, profile_chain_exhausted, packet_fit_drift]
+  intent_summary:
+    type: string
+    minLength: 1
+  execution_path:
+    type: string
+    enum: [normal_phase, fast_forward, cross_model_handoff, another_pass, resume_from_handoff, utility_mode, debug_mode, archive_mode]
+  artifacts_read:
+    type: array
+    items:
+      type: string
+  artifacts_written:
+    type: array
+    items:
+      type: string
+  validation_refs:
+    type: array
+    items:
+      type: string
+  outcome_category:
+    type: string
+    enum: [completed, completed_with_tasks, halted_for_input, validator_failed, skipped, escalated, redacted, error, partial, rejected, approved, rollback]
+  outcome_detail:
+    type: string
+  next_command:
+    type: string
+  parent_event_id:
+    type: string
+  redaction:
+    type: object
+    required: [sanitized, fields]
+    properties:
+      sanitized:
+        type: boolean
+      fields:
+        type: array
+        items:
+          type: string

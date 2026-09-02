@@ -1,0 +1,8 @@
+artifact: handoff
+phase: <Phase number and name>
+summary: <What changed>
+files_written: [<artifact.yaml>, <artifact.md>]
+used_model: <model + profile>
+model_advice: <recommended next model or reasoning class>
+next_phase: <Next phase number and name>
+next_command: <next slash command>

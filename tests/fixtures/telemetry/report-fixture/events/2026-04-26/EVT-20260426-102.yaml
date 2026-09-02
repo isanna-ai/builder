@@ -1,0 +1,24 @@
+artifact: workflow-event
+event_id: EVT-20260426-102
+recorded_at: 2026-04-26T09:30:00Z
+command: /isanna-5-implement
+mode: lifecycle
+phase: 5-implement
+spec: telemetry-fixture
+used_model: Claude Sonnet 4.6
+used_model_class: structured_planner
+thinking_effort: medium
+capture_source: unavailable
+reason_category: validator_failure
+intent_summary: Retry implementation after a validator failure.
+execution_path: normal_phase
+artifacts_read: [tasks.yaml, traceability.yaml]
+artifacts_written: []
+validation_refs: [tests/test_validator.sh]
+outcome_category: validator_failed
+outcome_detail: Validator failed on the generated task batch.
+next_command: /isanna-4-plan telemetry-fixture
+parent_event_id: EVT-20260426-101
+redaction:
+  sanitized: true
+  fields: []

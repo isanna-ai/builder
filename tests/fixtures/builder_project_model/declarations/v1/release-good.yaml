@@ -1,0 +1,9 @@
+schema_version: 1
+name: bia-audit-remediation
+description: Remediate the confirmed audit findings
+status: shipped
+specs:
+  - spec: cloud/audit-inventory
+  - spec: cloud/fix-retention
+    weight: 2
+  - spec: flow/publish-audit-events

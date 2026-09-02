@@ -1,0 +1,23 @@
+artifact: traceability
+spec: packet-fit-overflow
+requirement_links: []
+design_links: []
+task_links:
+  - task_id: T1
+    files:
+      - path: a
+        relevance: primary
+        estimated_tokens: 5000
+        load_priority: must
+        full_read_eligible: true
+      - path: b
+        relevance: primary
+        estimated_tokens: 5000
+        load_priority: must
+        full_read_eligible: true
+      - path: c
+        relevance: primary
+        estimated_tokens: 5000
+        load_priority: must
+        full_read_eligible: true
+    evidence_ids: []

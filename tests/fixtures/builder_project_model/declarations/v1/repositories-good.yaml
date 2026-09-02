@@ -1,0 +1,6 @@
+schema_version: 1
+repos:
+  - id: hivemind-cloud
+    path: ../hivemind-cloud
+  - id: sharedlib
+    path: ../sharedlib

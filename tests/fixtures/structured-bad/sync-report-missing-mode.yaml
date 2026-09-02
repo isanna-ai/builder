@@ -1,0 +1,7 @@
+artifact: utility-report
+command: /isanna-sync
+summary: Drift report generated.
+next_command: /isanna-5-implement 1-2 structured-artifact-modernization
+details:
+  - title: Drift summary
+    value: 1 drifted / 2 aligned

@@ -1,0 +1,19 @@
+artifact: tasks
+title: Good Fixture
+spec: spec-good
+tasks:
+  - id: T1
+    title: Validate the good fixture
+    repo: builder/
+    files: [tests/fixtures/spec-good/tasks.yaml, tests/test_validator.sh]
+    tdd:
+      mode: required
+    steps:
+      - text: Write a failing validator regression for the canonical task fixture.
+      - text: Run the validator regression suite.
+    verify:
+      - command: bash /path/to/project/tests/test_structured_artifacts.sh
+      - command: bash /path/to/project/tests/test_validator.sh
+    done_when: The canonical task fixture passes validator checks.
+    depends_on: []
+    parallel_with: []

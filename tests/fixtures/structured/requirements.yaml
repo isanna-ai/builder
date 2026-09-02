@@ -1,0 +1,10 @@
+artifact: requirements
+title: Structured Artifact Modernization
+spec: structured-artifact-modernization
+requirements:
+  - id: R1
+    title: Canonical planning artifact
+    user_story: As a Builder-maintaining agent, I want canonical planning data so that I can stop reparsing prose.
+    acceptance:
+      - WHEN planning data is saved, the system SHALL write tasks.yaml.
+      - WHEN planning data is reviewed, the system SHALL render tasks.md from tasks.yaml.

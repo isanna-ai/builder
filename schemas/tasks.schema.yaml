@@ -1,0 +1,88 @@
+type: object
+required: [artifact, title, spec, tasks]
+properties:
+  artifact:
+    type: string
+    const: tasks
+  title:
+    type: string
+    minLength: 1
+  spec:
+    type: string
+    minLength: 1
+  tasks:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, title, repo, files, tdd, steps, verify, done_when, depends_on, parallel_with]
+      properties:
+        id:
+          type: string
+          pattern: ^T[0-9]+$
+        title:
+          type: string
+          minLength: 1
+        repo:
+          type: string
+          minLength: 1
+        files:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        tdd:
+          type: object
+          required: [mode]
+          properties:
+            mode:
+              type: string
+              enum: [required, exempt]
+            reason:
+              type: string
+        steps:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [text]
+            properties:
+              text:
+                type: string
+                minLength: 1
+        verify:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [command]
+            properties:
+              command:
+                type: string
+                minLength: 1
+              # Optional: the structured acceptance-criterion ids (AC-R<req>-<n>)
+              # this verify command proves. Absent on legacy tasks (unaffected);
+              # when present it feeds the enforce-gated acceptance-coverage check.
+              proves:
+                type: array
+                items:
+                  type: string
+        done_when:
+          type: string
+          minLength: 1
+        depends_on:
+          type: array
+          items:
+            type: string
+        parallel_with:
+          type: array
+          items:
+            type: string
+        human_gate:
+          type: string
+        # Optional task-level roll-up of the acceptance-criterion ids this task
+        # proves. Optional; existing tasks omit it and stay valid.
+        proves:
+          type: array
+          items:
+            type: string

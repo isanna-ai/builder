@@ -1,0 +1,10 @@
+scenario: 10-phase5-allow-list-update
+description: >
+  PolicyContext.update_phase5_allow_list replaces the allow list. A write_file
+  call to the listed path succeeds; a write_file call to an unlisted path is
+  denied with rule_id == "write_scope".
+scripted_turns: []
+expected_outcome: >
+  After update_phase5_allow_list(["/path/to/project/.builder/specs/test/ok.txt"]),
+  writing to that path returns a non-denied result while writing to
+  /path/to/project/scripts/secret.py returns PolicyDenied(rule_id="write_scope").

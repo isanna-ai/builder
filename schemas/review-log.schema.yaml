@@ -1,0 +1,45 @@
+type: object
+required: [artifact, title, spec, findings, verdict]
+properties:
+  artifact:
+    type: string
+    const: review-log
+  title:
+    type: string
+  spec:
+    type: string
+  findings:
+    type: array
+    items:
+      type: object
+      required: [id, class, title, summary]
+      properties:
+        id:
+          type: string
+          pattern: ^F[0-9]+$
+        class:
+          type: string
+          enum: [GREEN, YELLOW, RED, ANALYZE, HALT]
+        title:
+          type: string
+        summary:
+          type: string
+  amendments:
+    type: array
+    items:
+      type: object
+      required: [id, summary]
+      properties:
+        id:
+          type: string
+          pattern: ^A[0-9]+$
+        summary:
+          type: string
+  verdict:
+    type: object
+    required: [status, summary]
+    properties:
+      status:
+        type: string
+      summary:
+        type: string

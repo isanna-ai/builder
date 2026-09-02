@@ -1,0 +1,139 @@
+type: object
+required: [builder_root, backends]
+properties:
+  builder_root:
+    type: string
+    minLength: 1
+  backends:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [adapter]
+      properties:
+        adapter:
+          type: object
+          required: [module_path, class_name]
+          properties:
+            module_path:
+              type: string
+              minLength: 1
+            class_name:
+              type: string
+              minLength: 1
+            credential_env:
+              type: string
+              pattern: ^\$[A-Z_][A-Z0-9_]*$
+            expected_identity:
+              type: string
+            override_identity_mismatch:
+              type: boolean
+  model_profiles:
+    type: object
+    properties:
+      tiny_local:
+        type: object
+        effective_context_tokens: 12000
+        initial_packet_target_tokens: 2500
+        initial_packet_cap_tokens: 4000
+        session_growth_reserve_tokens: 4500
+        headroom_tokens: 2000
+        tool_schema_overhead_tokens: 800
+        max_full_read_files: 1
+        max_slice_files: 3
+        max_touched_files_per_task: 2
+        allow_rendered_markdown: false
+        allow_repo_exploration: false
+        verify_output_mode: tail
+        verify_stdout_tail_lines: 200
+        execution_strategy: inline_only
+        tool_surface: narrow
+        fresh_session_per_task: true
+        model_roster: [gemma-26b-q4]
+        fallback_chain: [small_commercial, flagship_commercial]
+      small_commercial:
+        type: object
+        effective_context_tokens: 64000
+        initial_packet_target_tokens: 10000
+        initial_packet_cap_tokens: 18000
+        session_growth_reserve_tokens: 16000
+        headroom_tokens: 6000
+        tool_schema_overhead_tokens: 2000
+        max_full_read_files: 6
+        max_slice_files: 12
+        max_touched_files_per_task: 6
+        allow_rendered_markdown: true
+        allow_repo_exploration: true
+        verify_output_mode: tail
+        verify_stdout_tail_lines: 400
+        execution_strategy: session_resume
+        tool_surface: full
+        fresh_session_per_task: false
+        model_roster: [small-commercial]
+        fallback_chain: [flagship_commercial]
+      flagship_commercial:
+        type: object
+        effective_context_tokens: 200000
+        initial_packet_target_tokens: 40000
+        initial_packet_cap_tokens: 80000
+        session_growth_reserve_tokens: 40000
+        headroom_tokens: 12000
+        tool_schema_overhead_tokens: 4000
+        max_full_read_files: 50
+        max_slice_files: 100
+        max_touched_files_per_task: 25
+        allow_rendered_markdown: true
+        allow_repo_exploration: true
+        verify_output_mode: full
+        verify_stdout_tail_lines: 1000
+        execution_strategy: session_resume
+        tool_surface: full
+        fresh_session_per_task: false
+        model_roster: [flagship-commercial]
+        fallback_chain: []
+
+  trust_tiers:
+    type: object
+  shell_allow_list:
+    type: array
+    items:
+      type: string
+    examples:
+      - git
+      - python3 scripts/validate-spec.py
+      - python3 -m pytest
+      - deno test
+      - bash tests/
+      - test -f
+      - test -d
+      - which
+      - grep
+      - wc -l
+  # spec_slots:
+  #   environment_readiness[]: id string, description string, verify string; verify must match shell_allow_list.
+  #   post_runner_review: required bool, scope enum full|security_only|architecture_only|none.
+  http_fetch:
+    type: object
+    properties:
+      deny_list:
+        type: array
+        items:
+          type: string
+      local_test_targets:
+        type: array
+        items:
+          type: string
+      response_cap_bytes:
+        type: integer
+      default_call_budget:
+        type: integer
+      default_bytes_budget:
+        type: integer
+      trusted_call_budget:
+        type: integer
+      trusted_bytes_budget:
+        type: integer
+  human_gate:
+    type: object
+  cache:
+    type: object

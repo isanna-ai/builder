@@ -1,0 +1,4 @@
+interface:
+  display_name: "Builder"
+  short_description: "Run the Builder workflow in Codex."
+  default_prompt: "Use Builder to plan, implement, or verify a spec."

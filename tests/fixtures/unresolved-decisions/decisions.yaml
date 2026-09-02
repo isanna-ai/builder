@@ -1,0 +1,4 @@
+decisions:
+  - id: D1
+    status: unresolved
+    description: Pending architecture decision

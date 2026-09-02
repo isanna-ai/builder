@@ -1,0 +1,23 @@
+name: Feature request
+description: Propose a change to the workflow, the contract, or the gates
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you hitting?
+      description: The situation, not the solution. What did you try to do, and where did it stop you?
+    validations: {required: true}
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you change?
+    validations: {required: true}
+  - type: textarea
+    id: verify
+    attributes:
+      label: How would the host verify it?
+      description: |
+        Every behaviour here is anchored to a test that can fail. What test would prove this works —
+        and what would it look like when it is broken?
+    validations: {required: true}

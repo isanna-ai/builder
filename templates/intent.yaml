@@ -1,0 +1,27 @@
+artifact: intent
+title: <Feature Title>
+spec: <feature-name>
+outcome: <what should be different after this ships>
+# Optional. Omit (or `normal`) for additive/reversible work. Set `destructive`
+# or `irreversible` when this ships a change that can lose data or cannot be
+# cleanly undone — that obliges the design to carry a `migration_strategy`.
+change_risk: normal   # normal | destructive | irreversible
+goal:
+  summary: <implementation-agnostic goal>
+  implementation_spec: false
+  notes:
+    - <optional implementation context or nuance>
+references:
+  system_model:
+    - <existing-system-model-id>
+constraints:
+  - id: C1
+    statement: <must always hold during this rollout>
+failure_conditions:
+  - id: F1
+    statement: <must never happen>
+success_signals:
+  - id: S1
+    statement: <observable sign the intent was achieved>
+non_goals:
+  - <explicitly out-of-scope item>

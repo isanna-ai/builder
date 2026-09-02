@@ -1,0 +1,21 @@
+artifact: workflow-event
+event_id: EVT-20260426-104
+recorded_at: 2026-04-26T10:30:00Z
+command: /isanna-list
+mode: utility
+used_model: GPT-5.4
+thinking_effort: low
+capture_source: unavailable
+reason_category: exploration
+intent_summary: List active specs in the workspace.
+execution_path: utility_mode
+artifacts_read: [spec.yaml]
+artifacts_written: []
+validation_refs: []
+outcome_category: completed
+outcome_detail: Spec summary displayed.
+next_command: /isanna-1-specify
+parent_event_id: ""
+redaction:
+  sanitized: true
+  fields: []

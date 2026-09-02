@@ -1,0 +1,14 @@
+type: object
+required: [phase_id, capability_class, spec, tasks]
+properties:
+  phase_id: {type: string}
+  capability_class: {type: string}
+  spec: {type: string}
+  tasks:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [task_ref]
+      properties:
+        task_ref: {type: string}

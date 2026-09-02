@@ -1,0 +1,8 @@
+name: spec-good-fixture
+created: 2026-01-01T00:00:00Z
+status: planned
+current_phase: 4-plan
+next_action: "Run /isanna-5-implement spec-good-fixture"
+task_count: 3
+tasks_done: 0
+tasks_total: 3

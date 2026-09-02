@@ -1,0 +1,39 @@
+type: object
+required: [task_id, entries]
+properties:
+  task_id:
+    type: string
+    pattern: ^T[0-9]+$
+  entries:
+    type: array
+    minItems: 1
+    items:
+      type: object
+      required: [id, step, command, exit_code, output_summary]
+      properties:
+        id:
+          type: string
+          pattern: ^E[A-Za-z0-9\-]+$
+        step:
+          type: string
+          enum: [red, green, verify]
+        command:
+          type: string
+        exit_code:
+          type: integer
+        output_summary:
+          type: string
+        source:
+          type: string
+          enum: [host, agent]
+          description: >-
+            Provenance of the captured exit_code. `host` = produced by actually
+            running the command on the host (command, exit code, and timestamp
+            captured mechanically). `agent` = self-reported by the model. A
+            `red` entry for a `tdd_mode: required` task MUST be `source: host`;
+            a fabricated or `source: agent` RED entry is a guardrail violation.
+        timestamp:
+          type: string
+          description: >-
+            When the command was run (ISO 8601). Required for host-captured RED
+            evidence.

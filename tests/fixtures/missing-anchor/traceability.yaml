@@ -1,0 +1,17 @@
+artifact: traceability
+spec: missing-anchor
+requirement_links: []
+design_links: []
+task_links:
+  - task_id: T1
+    files:
+      - path: scripts/validate-spec.py
+        relevance: primary
+        estimated_tokens: 100
+        load_priority: must
+        full_read_eligible: false
+        anchors:
+          - id: A1
+            kind: literal_string
+            locator: NONEXISTENT_STRING_ZZZ_9999
+    evidence_ids: []

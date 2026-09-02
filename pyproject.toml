@@ -1,0 +1,58 @@
+# isanna Builder — package metadata.
+#
+# This reserves the distribution name and records the licence/authorship. NOTE: the CLI today is a
+# set of stdlib scripts under scripts/ (some with hyphenated filenames that are not importable as
+# modules), so `pip install isanna-builder` is NOT yet wired end-to-end — making it installable
+# needs a src/isanna_builder/ restructure (tracked as a follow-up). Until then, run the CLI via
+# ./bin/isanna. This file builds a metadata-only distribution: enough to reserve the name, and
+# deliberately NOT enough to give you a working CLI. `pip install .` installs no console script.
+
+[build-system]
+requires = ["setuptools>=77"]  # PEP 639: `license` as an SPDX expression + `license-files`
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "isanna-builder"
+version = "0.3.1"
+description = "The host runs the tests. The agent does not get a vote. Spec-driven autonomous builds with host-executed gates."
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+authors = [
+  { name = "Thiago Henrique de Carvalho" },
+]
+keywords = ["spec-driven-development", "ai-agents", "verification", "ci", "autonomous-development"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Quality Assurance",
+  "Topic :: Software Development :: Testing",
+]
+
+# Nothing is packaged yet. Without this, setuptools' flat-layout autodiscovery finds
+# skills/, prompts/, schemas/, templates/, standards/ and pytest/ as top-level packages and
+# refuses to build at all. An explicit empty set makes the build succeed and produce exactly
+# what this file is for today -- metadata, for a name reservation -- instead of erroring.
+# The SHIPPED runtime needs nothing: `scripts/_yaml.py` prefers PyYAML and falls back to a
+# bundled parser, and the installed validator surface works on that fallback (verified). The
+# TEST SUITE is a different matter -- 32 of its cases exercise paths where the fallback and
+# PyYAML diverge, so a contributor or a CI runner without PyYAML sees 32 failures that are about
+# the parser, not their change. Declared here so it is installable and, more importantly, stated.
+[project.optional-dependencies]
+test = ["PyYAML>=6"]
+
+[tool.setuptools]
+py-modules = []
+
+[project.urls]
+Homepage = "https://isanna.ai"
+Repository = "https://github.com/isanna-ai/builder"
+Issues = "https://github.com/isanna-ai/builder/issues"
+Changelog = "https://github.com/isanna-ai/builder/blob/main/CHANGELOG.md"
+
+# Reserved for the dispatcher split (isanna-builder-dispatch) and the `isanna` console entry point;
+# wired once the src/ package restructure lands.
+# [project.scripts]
+# isanna = "isanna_builder.cli:main"

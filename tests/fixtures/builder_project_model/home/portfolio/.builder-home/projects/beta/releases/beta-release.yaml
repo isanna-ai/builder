@@ -1,0 +1,6 @@
+schema_version: 1
+name: beta-release
+description: Beta release
+status: active
+intents:
+  - beta-release-work

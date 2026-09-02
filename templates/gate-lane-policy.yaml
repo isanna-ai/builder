@@ -1,0 +1,22 @@
+version: "1"
+
+# Flow-through is earned only when every declared surface is listed here and
+# the completed phase's required artifacts and host validators are green.
+lane_a_surfaces:
+  - docs
+  - tests
+  - tooling
+  - additive_low_risk
+
+# These trust-critical surfaces never open on silence.
+lane_c_surfaces:
+  - migration
+  - critical_ssot_delta
+  - auth_surface
+  - payment_surface
+  - deploy_config
+  - public_contract
+
+# Lane B is the default for every surface not classified above.
+veto_window:
+  quiet_period_seconds: 3600

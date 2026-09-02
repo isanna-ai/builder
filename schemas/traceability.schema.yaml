@@ -1,0 +1,79 @@
+type: object
+required: [artifact, spec, requirement_links, design_links, task_links]
+properties:
+  artifact:
+    type: string
+    const: traceability
+  spec:
+    type: string
+  intent_links:
+    type: array
+    items:
+      type: object
+      required: [intent_id, requirement_ids]
+      properties:
+        intent_id:
+          type: string
+        requirement_ids:
+          type: array
+          items:
+            type: string
+  requirement_links:
+    type: array
+    items:
+      type: object
+      required: [requirement_id, design_ids]
+      properties:
+        requirement_id:
+          type: string
+        design_ids:
+          type: array
+          items:
+            type: string
+  design_links:
+    type: array
+    items:
+      type: object
+      required: [design_id, task_ids]
+      properties:
+        design_id:
+          type: string
+        task_ids:
+          type: array
+          items:
+            type: string
+  task_links:
+    type: array
+    items:
+      type: object
+      required: [task_id, files, evidence_ids]
+      properties:
+        task_id:
+          type: string
+        files:
+          type: array
+          items:
+            type: object
+            required: [path, relevance]
+            properties:
+              path: {type: string}
+              relevance: {enum: [primary, supporting, test]}
+              estimated_tokens: {type: integer}
+              load_priority: {enum: [must, should, optional]}
+              full_read_eligible: {type: boolean}
+              anchors:
+                type: array
+                items:
+                  type: object
+                  required: [id, kind, locator]
+                  properties:
+                    id: {type: string}
+                    kind: {enum: [literal_string, regex_v1, symbol_v1]}
+                    locator: {type: string}
+                    estimated_tokens: {type: integer}
+              summary_id: {type: [string, "null"]}
+              measured_tokens: {type: integer}
+        evidence_ids:
+          type: array
+          items:
+            type: string

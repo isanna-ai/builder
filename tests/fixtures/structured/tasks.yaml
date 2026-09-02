@@ -1,0 +1,35 @@
+artifact: tasks
+title: Structured Artifact Modernization
+spec: structured-artifact-modernization
+tasks:
+  - id: T1
+    title: Lock the artifact contract
+    repo: builder/
+    files: [standards/builder-contract.md, standards/builder-workflow.md, README.md]
+    tdd:
+      mode: exempt
+      reason: config-only
+    steps:
+      - text: Add the canonical artifact matrix to the contract.
+      - text: Add the dual-write and drift rules to workflow and standards.
+    verify:
+      - command: grep -n "tasks.yaml" /path/to/project/standards/builder-contract.md
+      - command: grep -n "dual-write" /path/to/project/standards/builder-workflow.md
+    done_when: Contract and workflow document the canonical artifacts.
+    depends_on: []
+    parallel_with: []
+  - id: T2
+    title: Build the schema and renderer foundation
+    repo: builder/
+    files: [schemas/tasks.schema.yaml, scripts/render-spec-artifacts.py, scripts/validate-spec.py, tests/test_structured_artifacts.sh]
+    tdd:
+      mode: required
+    steps:
+      - text: Write a failing renderer test for the golden tasks fixture.
+      - text: Implement the renderer and validator dispatcher.
+    verify:
+      - command: bash /path/to/project/tests/test_structured_artifacts.sh
+      - command: python3 /path/to/project/scripts/validate-spec.py --list-checks
+    done_when: Renderer and validator foundation are in place.
+    depends_on: [T1]
+    parallel_with: []

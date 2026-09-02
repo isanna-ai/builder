@@ -1,0 +1,52 @@
+type: object
+required:
+  - capabilities
+  - behaviors
+  - journeys
+additionalProperties: false
+properties:
+  capabilities:
+    type: array
+    items:
+      type: object
+      required:
+        - target
+        - change
+      additionalProperties: false
+      properties:
+        target:
+          type: string
+          minLength: 1
+        change:
+          type: string
+          enum: [create, enrich, rewire]
+  behaviors:
+    type: array
+    items:
+      type: object
+      required:
+        - target
+        - change
+      additionalProperties: false
+      properties:
+        target:
+          type: string
+          minLength: 1
+        change:
+          type: string
+          enum: [create, enrich, rewire]
+  journeys:
+    type: array
+    items:
+      type: object
+      required:
+        - target
+        - change
+      additionalProperties: false
+      properties:
+        target:
+          type: string
+          minLength: 1
+        change:
+          type: string
+          enum: [create, enrich, rewire]

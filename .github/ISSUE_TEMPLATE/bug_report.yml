@@ -1,0 +1,40 @@
+name: Bug report
+description: Something behaves differently from what the docs say
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please do **not** report a security problem here — see
+        [SECURITY.md](../../SECURITY.md) for private reporting.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+      description: If a doc says otherwise, quote the line — a docs/behaviour mismatch is a real bug here.
+    validations: {required: true}
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: The smallest sequence that shows it. Exact commands, and their output.
+      render: shell
+    validations: {required: true}
+  - type: input
+    id: install
+    attributes:
+      label: How did you install?
+      placeholder: "curl | bash · standalone-installer.sh.txt · from a clone"
+    validations: {required: true}
+  - type: input
+    id: agent
+    attributes:
+      label: Agent and OS
+      placeholder: "Copilot Chat / Claude Code / Codex · macOS 15 · Python 3.12"
+    validations: {required: true}
+  - type: textarea
+    id: gate
+    attributes:
+      label: "`make gate` output, if you are working from a clone"
+      description: Run it on Linux — the suite cannot be green on macOS (see the note in the Makefile).
+      render: shell

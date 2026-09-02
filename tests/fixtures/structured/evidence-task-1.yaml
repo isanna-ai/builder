@@ -1,0 +1,17 @@
+task_id: T1
+entries:
+  - id: E1-red
+    step: red
+    command: bash /path/to/project/tests/test_structured_artifacts.sh
+    exit_code: 1
+    output_summary: Initial failing test captured the missing contract wiring.
+  - id: E1-green
+    step: green
+    command: bash /path/to/project/tests/test_structured_artifacts.sh
+    exit_code: 0
+    output_summary: Contract wiring passed after the fix.
+  - id: E1-verify
+    step: verify
+    command: bash /path/to/project/tests/test_validator.sh
+    exit_code: 0
+    output_summary: Validator regression remained green.

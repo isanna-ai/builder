@@ -1,0 +1,29 @@
+artifact: workflow-event
+event_id: EVT-20260426-101
+recorded_at: 2026-04-26T09:00:00Z
+command: /isanna-5-implement
+mode: lifecycle
+phase: 5-implement
+spec: telemetry-fixture
+used_model: GPT-5.4
+used_model_class: deep_reasoner
+thinking_effort: xhigh
+capture_source: runtime_measured
+input_tokens: 1000
+output_tokens: 250
+total_tokens: 1250
+latency_ms: 2000
+tokens_per_second: 125.0
+reason_category: phase_progress
+intent_summary: Implement the primary task batch.
+execution_path: normal_phase
+artifacts_read: [tasks.yaml, design.yaml]
+artifacts_written: [scripts/feature.py, tests/test_feature.py]
+validation_refs: [tests/test_workflow_telemetry.sh]
+outcome_category: completed
+outcome_detail: Batch completed successfully.
+next_command: /isanna-5-implement 3-4 telemetry-fixture
+parent_event_id: ""
+redaction:
+  sanitized: true
+  fields: []

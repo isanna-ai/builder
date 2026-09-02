@@ -1,0 +1,19 @@
+artifact: tasks
+title: Packet Fit Overflow
+spec: packet-fit-overflow
+tasks:
+  - id: T1
+    title: Overflow
+    repo: builder/
+    files: [a, b, c]
+    tdd: {mode: exempt, reason: config-only}
+    steps:
+      - text: Do it
+    verify:
+      - command: test -f README.md
+    done_when: Done
+    depends_on: []
+    parallel_with: []
+    packet_fit:
+      status: fit
+      initial_packet_tokens: 15000

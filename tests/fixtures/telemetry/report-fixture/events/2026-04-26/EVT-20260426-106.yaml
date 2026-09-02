@@ -1,0 +1,21 @@
+artifact: workflow-event
+event_id: EVT-20260426-106
+recorded_at: 2026-04-26T11:30:00Z
+command: /isanna-archive
+mode: utility
+used_model: Claude Sonnet 4.6
+thinking_effort: low
+capture_source: unavailable
+reason_category: archival
+intent_summary: Archive the verified spec.
+execution_path: archive_mode
+artifacts_read: [spec.yaml, phase-log.yaml]
+artifacts_written: [archive-report.yaml]
+validation_refs: []
+outcome_category: completed
+outcome_detail: Spec archived successfully.
+next_command: none
+parent_event_id: EVT-20260426-105
+redaction:
+  sanitized: true
+  fields: []

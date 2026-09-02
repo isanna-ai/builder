@@ -1,0 +1,17 @@
+artifact: tasks
+title: Tiny Local Bad Human Gate
+spec: tiny-local-bad-human-gate
+tasks:
+  - id: T1
+    title: Bad gate
+    repo: builder/
+    files: [README.md]
+    tdd: {mode: exempt, reason: config-only}
+    steps:
+      - text: Do it
+    verify:
+      - command: test -f README.md
+    done_when: Done
+    depends_on: []
+    parallel_with: []
+    human_gate: Decide on implementation approach

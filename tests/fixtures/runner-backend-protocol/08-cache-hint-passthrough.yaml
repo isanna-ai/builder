@@ -1,0 +1,11 @@
+scenario: 08-cache-hint-passthrough
+description: >
+  FakeBackend.emit_cache_hint(["segment-a"]) increments the internal
+  _cache_hint_count. The SessionTrace returned by close() reflects
+  cache_hint_count == 1.
+scripted_turns:
+  - content: "ok"
+    tool_calls: []
+expected_outcome: >
+  SessionTrace.cache_hint_count == 1 after one emit_cache_hint call before
+  the session is started and closed.

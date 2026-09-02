@@ -1,0 +1,20 @@
+queue_store:
+  path: .builder/dispatch-queue
+lanes:
+  - name: claude
+    provider: claude-code-cli
+    max_concurrency: 1
+  - name: codex
+    provider: codex-cli
+    max_concurrency: 1
+routing_policy:
+  default: ordered
+cooldown_policy:
+  default_seconds: 120
+retry_policy:
+  max_attempts: 3
+  initial_seconds: 10
+  max_seconds: 120
+  jitter_seconds: 0
+pipeline:
+  dependency_gating: false

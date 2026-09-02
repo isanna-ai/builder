@@ -1,0 +1,22 @@
+schema_version: 1
+workspace:
+  import_aliases: ['@modules']
+commands:
+  default:
+    test: bash /path/to/project/tests/test_structured_artifacts.sh
+    check: python3 /path/to/project/scripts/validate-spec.py --list-checks
+boundaries:
+  off_limits: []
+validation:
+  test:
+    confidence: confirmed
+    probe: bash /path/to/project/tests/test_structured_artifacts.sh
+  check:
+    confidence: confirmed
+    probe: python3 /path/to/project/scripts/validate-spec.py --list-checks
+discovered:
+  ai_files: []
+  builder_files: []
+  candidate_commands:
+    test: []
+    check: []

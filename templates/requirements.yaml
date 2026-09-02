@@ -1,0 +1,18 @@
+artifact: requirements
+title: <Feature Title>
+spec: <feature-name>
+requirements:
+  - id: R1
+    title: <Requirement title>
+    user_story: As a <user>, I want <capability> so that <outcome>.
+    acceptance:
+      # Preferred: structured acceptance (id + observable surface + oracle + priority).
+      - id: AC-R1-1
+        statement: WHEN <trigger>, the system SHALL <observable behavior>.
+        observable_at: <surface/log/endpoint/exit-code where the behavior is observable>
+        oracle:
+          type: automated_test
+          expected: <what a passing check asserts>
+        priority: must
+      # Legacy bare-string form is still accepted (never required to migrate):
+      - WHEN <trigger>, the system SHALL <behavior>.

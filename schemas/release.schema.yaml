@@ -1,0 +1,62 @@
+type: object
+required: [release, status]
+properties:
+  release:
+    type: string
+    pattern: "^[a-z0-9][a-z0-9-]*$"
+  product:
+    type: string
+  title:
+    type: string
+  goal:
+    type: string
+  status:
+    type: string
+    enum: [draft, active, shipped, cancelled, abandoned, archived]
+  scope_ratified_at:
+    type: string
+  specs:
+    type: array
+    minItems: 1
+    items:
+      oneOf:
+        - type: string
+        - type: object
+          required: [spec]
+          properties:
+            spec:
+              type: string
+            weight:
+              type: integer
+              minimum: 1
+          additionalProperties: true
+  intents:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      type: string
+      pattern: "^[a-z0-9][a-z0-9-]*$"
+  milestones:
+    type: array
+    description: "Deliberately unused. A milestone is a Release."
+additionalProperties: true
+allOf:
+  - if:
+      properties:
+        status:
+          enum: [draft, active]
+      required: [status]
+    then:
+      required: [intents]
+      not:
+        required: [specs]
+  - if:
+      properties:
+        status:
+          enum: [shipped, cancelled, abandoned, archived]
+      required: [status]
+    then:
+      required: [specs]
+      not:
+        required: [intents]

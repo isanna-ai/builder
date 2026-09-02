@@ -1,0 +1,97 @@
+type: object
+required: [schema_version, workspace, commands, boundaries, validation, discovered]
+properties:
+  schema_version:
+    type: integer
+  artifact_mode:
+    type: string
+    enum: [dual, ai_native]
+  default_artifact_mode:
+    type: string
+    enum: [dual, ai_native]
+  workspace:
+    type: object
+    required: [roots]
+    properties:
+      mode:
+        type: string
+      default_repo:
+        type: string
+      roots:
+        type: array
+        minItems: 1
+        items:
+          type: string
+      import_aliases:
+        type: array
+        items:
+          type: string
+      owned_paths:
+        type: array
+        items:
+          type: string
+      generated_paths:
+        type: array
+        items:
+          type: string
+  commands:
+    type: object
+    required: [default]
+    properties:
+      default:
+        type: object
+        required: [test, check]
+        properties:
+          test:
+            type: string
+          check:
+            type: string
+      repos:
+        type: object
+  boundaries:
+    type: object
+    required: [off_limits]
+    properties:
+      off_limits:
+        type: array
+        items:
+          type: string
+  validation:
+    type: object
+    properties:
+      test:
+        type: object
+        properties:
+          confidence:
+            type: string
+          probe:
+            type: string
+      check:
+        type: object
+        properties:
+          confidence:
+            type: string
+          probe:
+            type: string
+  discovered:
+    type: object
+    properties:
+      ai_files:
+        type: array
+        items:
+          type: string
+      builder_files:
+        type: array
+        items:
+          type: string
+      candidate_commands:
+        type: object
+        properties:
+          test:
+            type: array
+            items:
+              type: string
+          check:
+            type: array
+            items:
+              type: string

@@ -1,0 +1,88 @@
+type: object
+required: [artifact, generated_at, scope, event_count, summaries, recommendations]
+properties:
+  artifact:
+    type: string
+    const: telemetry-report
+  generated_at:
+    type: string
+  scope:
+    type: string
+    const: workspace
+  event_count:
+    type: integer
+  summaries:
+    type: object
+    required: [command_usage, outcome_counts, model_outcome_matrix, thinking_effort_matrix, validator_failures, another_pass_loops, archive_funnel, utility_adoption]
+    properties:
+      command_usage:
+        type: array
+        items:
+          type: object
+          required: [command, count]
+          properties:
+            command:
+              type: string
+            count:
+              type: integer
+      outcome_counts:
+        type: array
+        items:
+          type: object
+          required: [outcome_category, count]
+          properties:
+            outcome_category:
+              type: string
+            count:
+              type: integer
+      model_outcome_matrix:
+        type: array
+        items:
+          type: object
+          required: [used_model, outcome_category, count]
+          properties:
+            used_model:
+              type: string
+            outcome_category:
+              type: string
+            count:
+              type: integer
+      thinking_effort_matrix:
+        type: array
+        items:
+          type: object
+          required: [thinking_effort, outcome_category, count]
+          properties:
+            thinking_effort:
+              type: string
+            outcome_category:
+              type: string
+            count:
+              type: integer
+      validator_failures:
+        type: integer
+      another_pass_loops:
+        type: integer
+      archive_funnel:
+        type: object
+        required: [verified_events, archived_events]
+        properties:
+          verified_events:
+            type: integer
+          archived_events:
+            type: integer
+      utility_adoption:
+        type: array
+        items:
+          type: object
+          required: [command, count]
+          properties:
+            command:
+              type: string
+            count:
+              type: integer
+  recommendations:
+    type: array
+    minItems: 1
+    items:
+      type: string

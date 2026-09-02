@@ -1,0 +1,143 @@
+# The host gate, run by the host — the same claim this project makes about agents.
+#
+# CONTRIBUTING.md names `make gate` as the merge criterion, so it has to be a REQUIRED
+# CHECK and not a habit. The same reasoning applies to `make scrub`: a mechanical gate, not
+# a one-time read.
+#
+# The SUITE is Linux only, deliberately. `_proc_identity()`
+# (scripts/_dispatch_runtime/lane_common.py) reads /proc, which its own docstring documents as
+# "Linux /proc only (the container runtime)", so ~40 governor/daemon cases fail on macOS for the
+# platform and not for the code. A macOS leg of `make gate` would be red forever and would teach
+# everyone to ignore CI.
+#
+# The INSTALLER is a different matter, and README promises it works there. `macos-install` below
+# exercises exactly that on macos-latest -- the documented install, the resulting layout, and the
+# installed validator -- so the promise is backed by a job rather than by one manual run.
+name: gate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: make gate (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # pyproject declares requires-python >=3.11; every supported version is exercised,
+        # because "supported" that is never run is a claim, not a fact.
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # The suite needs PyYAML (see pyproject's `test` extra). setup-python ships none, so
+      # without this every leg reds on 32 parser-divergence failures that are nothing to do
+      # with the change under test.
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[test]"
+      - name: make gate
+        run: make gate
+
+  checks:
+    name: lint · shell-tests · scrub · demo
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[test]"
+      # Several tests/*.sh build throwaway repos and commit into them.
+      - name: Configure a git identity for the shell tests
+        run: |
+          git config --global user.email "gate@github.actions"   # publish-ok: CI-only placeholder identity
+          git config --global user.name "gate"
+          git config --global init.defaultBranch main
+      - run: make lint
+      - run: make shell-tests
+      # The pre-publish scrub gate. Nothing publishes before this is green, so a secret or a
+      # private path can never be merged in later and discovered at release time.
+      - run: make scrub
+      # The flagship demo doubles as an end-to-end assertion that the gate still catches a
+      # lying agent. If this stops exiting 0 the project's central claim is broken.
+      - run: make demo
+
+  public-export:
+    name: the public export passes its own gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Configure a git identity for the shell tests
+        run: |
+          git config --global user.email "gate@github.actions"   # publish-ok: CI-only placeholder identity
+          git config --global user.name "gate"
+          git config --global init.defaultBranch main
+      # Green here is NOT green for a contributor. The export drops the working `.builder/`
+      # spec tree and other development-only directories, so tests bound to this repo's own
+      # spec corpus used to fail on a fresh clone while the source tree stayed green — `make
+      # gate` red on the very artifact people clone. Build the export and run the suite in it.
+      - name: Build the fresh-history export
+        run: scripts/export-public.sh /tmp/builder-public-ci
+      - name: Install test dependencies
+        run: python -m pip install --disable-pip-version-check -e ".[test]"
+      - name: make test inside the export
+        working-directory: /tmp/builder-public-ci
+        run: make test
+
+  macos-install:
+    name: the installer works on macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      # macOS ships bash 3.2 and BSD userland -- different sed, different getopt, no GNU flags.
+      # README tells macOS users this install works; nothing verified that until now.
+      - name: Install into a scratch repository
+        run: |
+          set -eu
+          mkdir -p "$RUNNER_TEMP/target"
+          git -C "$RUNNER_TEMP/target" init -q
+          bash install.sh --target "$RUNNER_TEMP/target" --yes
+      - name: Every load_set asset resolves, and the validator runs
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/target"
+          for f in builder-standards.md builder-tdd.md builder-workflow.md builder-contract.md \
+                   builder-guardrails-implement.md builder-guardrails-review.md \
+                   builder-guardrails-verify.md; do
+            test -f ".builder/standards/$f" || { echo "MISSING .builder/standards/$f"; exit 1; }
+          done
+          test -f .builder/prompts/isanna-help.prompt.md
+          test -f .builder/skills/planning/SKILL.md
+          mkdir -p .builder/specs/ci && : > .builder/specs/ci/system-model.yaml
+          # The validator must not report the installed assets as missing -- that defect shipped
+          # once and halted the verify phase in every install.
+          python3 .builder/scripts/validate-spec.py ci 2>&1 | tee /tmp/out.txt || true
+          ! grep -q "load_set.*missing file" /tmp/out.txt
+      - name: A non-repo target is still refused
+        run: |
+          set -eu
+          mkdir -p "$RUNNER_TEMP/plain"
+          if bash install.sh --target "$RUNNER_TEMP/plain" --yes; then
+            echo "installer accepted a non-repo target"; exit 1
+          fi
+          test -z "$(ls -A "$RUNNER_TEMP/plain")" || { echo "wrote into a refused target"; exit 1; }

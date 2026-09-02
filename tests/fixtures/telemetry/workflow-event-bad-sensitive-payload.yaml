@@ -1,0 +1,26 @@
+artifact: workflow-event
+event_id: EVT-20260426-SECRET
+recorded_at: 2026-04-26T12:00:00Z
+command: /isanna-1-specify
+mode: lifecycle
+phase: specify
+spec: workflow-telemetry-intelligence
+used_model: claude-opus-4.7
+used_model_class: opus
+thinking_effort: medium
+capture_source: unavailable
+reason_category: phase_progress
+intent_summary: "Phase 1 ran with sk-1234567890abcdefABCDEF token leaked in the summary" # publish-ok: deliberate redaction fixture
+execution_path: normal_phase
+artifacts_read:
+  - .builder/specs/workflow-telemetry-intelligence/spec.yaml
+artifacts_written:
+  - .builder/specs/workflow-telemetry-intelligence/requirements.yaml
+validation_refs: []
+outcome_category: completed
+outcome_detail: "internal note"
+next_command: /isanna-2-design
+raw_prompt: "USER PROMPT TEXT THAT MUST BE DROPPED"
+redaction:
+  sanitized: true
+  fields: []

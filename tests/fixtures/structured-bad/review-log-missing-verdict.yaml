@@ -1,0 +1,8 @@
+artifact: review-log
+title: Structured Artifact Modernization
+spec: structured-artifact-modernization
+findings:
+  - id: F1
+    class: GREEN
+    title: Planning artifact aligned
+    summary: Canonical tasks data matches the rendered planning view.

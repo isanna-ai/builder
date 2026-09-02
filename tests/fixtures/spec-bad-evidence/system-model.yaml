@@ -1,0 +1,45 @@
+version: 1
+
+what:
+  entities:
+    - id: ENT1
+      name: Job
+  capabilities:
+    - id: CAP1
+      name: run_job
+
+who:
+  actors:
+    - id: ACT1
+      name: Worker
+      capabilities: [CAP1]
+
+when:
+  events:
+    - id: EVT1
+      name: job_started
+      trigger: "A worker begins processing a job"
+
+where:
+  boundaries:
+    - id: BND1
+      name: worker_process
+      purpose: "Background execution boundary"
+
+why:
+  rules:
+    - id: RUL1
+      statement: "Every started job must record verification evidence"
+      applies_to: [ACT1, CAP1, BND1]
+
+how:
+  behaviors:
+    - capability: CAP1
+      success: "Job completes with recorded evidence"
+      failures: [unexpected_runtime_error]
+
+upstream:
+  sources: []
+
+downstream:
+  sinks: []

@@ -1,0 +1,13 @@
+id: work-1
+state: queued
+priority: 3
+attempt: 0
+max_attempts: 4
+scheduled_after: null
+lane: codex-cli
+lease: {}
+task_ref:
+  kind: builder-runner-task
+  runner_task_ref: runs/task-T1.yaml
+created_at: 2026-07-13T00:00:00Z
+updated_at: 2026-07-13T00:00:00Z

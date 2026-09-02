@@ -1,0 +1,16 @@
+artifact: intent-object
+intent: example-intent
+title: Example intent title
+status: proposed
+problem: Describe the current user or operator pain.
+why: Describe why this intent matters now.
+success_criteria:
+  - id: SC-1
+    statement: Describe one concrete success criterion.
+non_goals:
+  - Describe one thing this intent will not do.
+ssot_delta:
+  capabilities: []
+  behaviors: []
+  journeys: []
+specs: []

@@ -1,0 +1,7 @@
+event_id: event-1
+work_id: work-1
+event_type: attempt_recorded
+payload:
+  attempt_id: attempt-1
+  lane: codex-cli
+created_at: 2026-07-13T00:00:00Z

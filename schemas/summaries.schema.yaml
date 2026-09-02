@@ -1,0 +1,18 @@
+type: object
+required: [summaries]
+properties:
+  summaries:
+    type: array
+    items:
+      type: object
+      required: [id, source_file, purpose, body]
+      properties:
+        id: {type: string}
+        source_file: {type: string}
+        purpose:
+          type: string
+          enum: [requirements_summary, design_summary, task_summary, verify_summary]
+        # body must be <= 1600 characters; validator rejects longer values
+        body:
+          type: string
+          maxLength: 1600
